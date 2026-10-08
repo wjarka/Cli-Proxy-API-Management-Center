@@ -3,8 +3,25 @@ import { createElement, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { parse as parseYaml } from 'yaml';
 import { parseRoutingStrategy, useVisualConfig } from '../src/hooks/useVisualConfig';
+import { runVisualConfig } from './helpers/visualConfig';
 
 describe('visual config weighted routing strategy', () => {
+  test('preserves earliest-reset when loading the visual editor', () => {
+    expect(parseRoutingStrategy('earliest-reset')).toBe('earliest-reset');
+    expect(parseRoutingStrategy(' EARLIEST-RESET ')).toBe('earliest-reset');
+  });
+
+  test('loads and saves earliest-reset without changing session affinity', () => {
+    const source = 'routing:\n  strategy: earliest-reset\n  session-affinity: true\n';
+    const loaded = runVisualConfig(source);
+    expect(loaded.visualValues.routingStrategy).toBe('earliest-reset');
+    expect(parseYaml(loaded.applyVisualChangesToYaml(source))).toEqual(parseYaml(source));
+
+    const initial = 'routing:\n  strategy: round-robin\n  session-affinity: true\n';
+    const edited = runVisualConfig(initial, [{ routingStrategy: 'earliest-reset' }]);
+    expect(parseYaml(edited.applyVisualChangesToYaml(initial))).toEqual(parseYaml(source));
+  });
+
   test('recognizes the weighted-round-robin backend value', () => {
     expect(parseRoutingStrategy('weighted-round-robin')).toBe('weighted-round-robin');
     expect(parseRoutingStrategy('weightedroundrobin')).toBe('weighted-round-robin');
