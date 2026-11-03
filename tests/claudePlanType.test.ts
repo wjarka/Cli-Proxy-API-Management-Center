@@ -1,8 +1,48 @@
 import { describe, expect, test } from 'bun:test';
 import { resolveClaudePlanType } from '@/features/quota/providers/claude/data';
 import type { ClaudeProfileResponse } from '@/types';
+import en from '@/i18n/locales/en.json';
+import ru from '@/i18n/locales/ru.json';
+import vi from '@/i18n/locales/vi.json';
+import zhCN from '@/i18n/locales/zh-CN.json';
+import zhTW from '@/i18n/locales/zh-TW.json';
 
 describe('Claude plan type', () => {
+  test.each([
+    ['default_claude_max_20x', 'plan_ultra', 'Ultra'],
+    ['default_claude_max_5x', 'plan_max', 'Max'],
+    [' DEFAULT_CLAUDE_MAX_20X ', 'plan_ultra', 'Ultra'],
+    ['unknown-tier', 'plan_max', 'Max'],
+    [undefined, 'plan_max', 'Max'],
+  ] as const)('labels the personal tier %s using current plan names', (tier, expected, label) => {
+    const plan = resolveClaudePlanType({
+      account: { has_claude_max: true, has_claude_pro: true },
+      organization: {
+        organization_type: 'claude_max',
+        subscription_status: 'active',
+        rate_limit_tier: tier,
+      },
+    });
+
+    expect(plan).toBe(expected);
+    for (const locale of [en, ru, vi, zhCN, zhTW]) {
+      expect(locale.claude_quota[plan as keyof typeof locale.claude_quota]).toBe(label);
+    }
+  });
+
+  test('does not label an active Team token as the personal Ultra plan', () => {
+    expect(
+      resolveClaudePlanType({
+        account: { has_claude_max: true },
+        organization: {
+          organization_type: 'claude_team',
+          subscription_status: 'active',
+          rate_limit_tier: 'default_claude_max_20x',
+        },
+      })
+    ).toBe('plan_team');
+  });
+
   test.each([
     { has_claude_max: false, has_claude_pro: true },
     { has_claude_max: true, has_claude_pro: false },

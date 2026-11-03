@@ -496,8 +496,7 @@
     "plan_free": "Miễn phí",
     "plan_pro": "Pro",
     "plan_max": "Max",
-    "plan_max5": "Max 5x",
-    "plan_max20": "Max 20x",
+    "plan_ultra": "Ultra",
     "plan_team": "Team"
   },
   "codex_quota": {
