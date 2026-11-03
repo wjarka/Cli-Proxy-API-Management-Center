@@ -11,6 +11,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { authFilesApi } from '@/services/api';
+import { quotaReserveForFile } from '@/services/api/quotaReserves';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { IconSearch, IconX } from '@/components/ui/icons';
@@ -50,6 +51,7 @@ import type { QuotaProviderType } from './providers/types';
 import { useDevinQuotaAutoLoad } from './providers/devin/useDevinQuotaAutoLoad';
 import { useQuotaActions } from './hooks/useQuotaActions';
 import { useQuotaBatchLoader } from './hooks/useQuotaBatchLoader';
+import { useQuotaReserves } from './hooks/useQuotaReserves';
 import { readQuotaUiState, writeQuotaUiState } from './uiState';
 import styles from './QuotaPage.module.scss';
 
@@ -114,7 +116,17 @@ export function QuotaPage() {
     }
   }, [connectionStatus, sessionGeneration, t]);
 
-  useHeaderRefresh(loadFiles);
+  const {
+    reserves,
+    unavailable: reservesUnavailable,
+    refresh: refreshReserves,
+  } = useQuotaReserves(connectionStatus === 'connected', sessionGeneration);
+  useHeaderRefresh(
+    useCallback(() => {
+      refreshReserves();
+      return loadFiles();
+    }, [loadFiles, refreshReserves])
+  );
 
   useEffect(() => {
     void loadFiles();
@@ -248,9 +260,10 @@ export function QuotaPage() {
   // 刷新全部：先重取文件列表，待其落定（loading 下降沿）再批量拉当前页额度
   const handleRefreshAll = useCallback(() => {
     if (disableControls) return;
+    refreshReserves();
     pendingRefreshRef.current = sessionGeneration;
     void loadFiles();
-  }, [disableControls, loadFiles, sessionGeneration]);
+  }, [disableControls, loadFiles, sessionGeneration, refreshReserves]);
 
   useEffect(() => {
     const wasLoading = prevLoadingRef.current;
@@ -379,6 +392,12 @@ export function QuotaPage() {
           </div>
         )}
 
+        {reservesUnavailable && (
+          <div className={styles.errorBanner} role="alert">
+            {t('quota_reserve.load_failed')}
+          </div>
+        )}
+
         {loading ? (
           <div className={styles.grid} aria-hidden="true">
             {Array.from({ length: SKELETON_CARD_COUNT }, (_, index) => (
@@ -420,6 +439,7 @@ export function QuotaPage() {
                 key={`${entry.type}:${getQuotaCacheKey(entry.file)}`}
                 entry={entry}
                 quota={getQuota(entry)}
+                reserve={quotaReserveForFile(reserves, entry.file)}
                 resolvedTheme={resolvedTheme}
                 canRefresh={canUseActions && !entry.file.disabled}
                 resetting={resettingQuotaName === getQuotaCacheKey(entry.file)}

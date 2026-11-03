@@ -94,6 +94,57 @@
   min-width: 0;
 }
 
+.reserveDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+
+  > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 8px;
+  }
+
+  strong {
+    color: var(--text-primary);
+  }
+  p {
+    margin: 0;
+  }
+  ul {
+    display: grid;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  time {
+    font-variant-numeric: tabular-nums;
+  }
+  small {
+    font-size: 11px;
+  }
+
+  &[data-status='reserved'],
+  &[data-status='unknown'],
+  &[data-status='unavailable'] {
+    border-color: var(--warning-color);
+  }
+}
+
 /* ---------- idle：整块 body 即点击加载的落点 ---------- */
 
 .idleBody {

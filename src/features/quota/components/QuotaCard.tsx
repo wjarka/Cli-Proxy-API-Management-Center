@@ -26,6 +26,8 @@ import { useClaudeResetGrants } from '../providers/claude/ClaudeResetGrants';
 import { ClaudeResetGrantDetails } from '../providers/claude/ClaudeResetGrantDetails';
 import bodyStyles from './QuotaBody.module.scss';
 import styles from './QuotaCard.module.scss';
+import type { QuotaReserve } from '@/services/api/quotaReserves';
+import { QuotaReserveDetails } from './QuotaReserveDetails';
 
 /** 额度页全页外衣：QuotaBody 模块绑定成类型化契约（缺键在模块初始化即抛）。 */
 const quotaClasses = bindQuotaClasses(bodyStyles, 'QuotaBody.module.scss');
@@ -33,6 +35,7 @@ const quotaClasses = bindQuotaClasses(bodyStyles, 'QuotaBody.module.scss');
 export type QuotaCardProps = {
   entry: QuotaFileEntry;
   quota?: QuotaCardState;
+  reserve?: QuotaReserve;
   resolvedTheme: ResolvedTheme;
   canRefresh: boolean;
   resetting: boolean;
@@ -46,6 +49,7 @@ export function QuotaCard(props: QuotaCardProps) {
   const {
     entry,
     quota,
+    reserve,
     resolvedTheme,
     canRefresh,
     resetting,
@@ -112,6 +116,8 @@ export function QuotaCard(props: QuotaCardProps) {
           {displayName}
         </span>
       </header>
+
+      {reserve && <QuotaReserveDetails reserve={reserve} className={styles.reserveDetails} />}
 
       <div className={styles.body}>
         {entry.type === 'claude' && status === 'success' && (
