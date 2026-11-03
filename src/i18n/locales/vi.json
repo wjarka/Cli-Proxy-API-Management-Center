@@ -1,4 +1,27 @@
 {
+  "quota_reserve": {
+    "title": "Hạn mức dự trữ cho proxy",
+    "protected": "Đang bảo vệ {{percent}}%",
+    "amount_unknown": "Chưa rõ hạn mức được bảo vệ",
+    "status_allowed": "Hạn mức dự trữ cho phép proxy sử dụng",
+    "status_reserved": "Proxy bị chặn bởi hạn mức dự trữ",
+    "status_unknown": "Proxy đang chờ dữ liệu hạn mức",
+    "status_unavailable": "Không có trạng thái hạn mức dự trữ",
+    "next_release": "Lần giải phóng tiếp theo:",
+    "schedule": "Lịch dự trữ hạn mức hằng tuần",
+    "daily": "{{percent}}% mỗi ngày · giải phóng lúc {{time}}",
+    "direct_use": "Sử dụng trực tiếp có thể tiêu thụ hạn mức dự trữ này.",
+    "load_failed": "Không thể tải giới hạn dự trữ của proxy. Hãy làm mới để thử lại.",
+    "days": {
+      "mon": "Thứ Hai",
+      "tue": "Thứ Ba",
+      "wed": "Thứ Tư",
+      "thu": "Thứ Năm",
+      "fri": "Thứ Sáu",
+      "sat": "Thứ Bảy",
+      "sun": "Chủ Nhật"
+    }
+  },
   "common": {
     "login": "Đăng nhập",
     "logout": "Đăng xuất",
@@ -491,6 +514,7 @@
     "iguana_necktie": "Iguana Necktie",
     "seven_day_fable": "Fable 5 · 7 ngày",
     "extra_usage_label": "Sử dụng thêm",
+    "cloud_session_credits": "Tín dụng phiên đám mây",
     "plan_label": "Gói",
     "plan_unknown": "Không rõ",
     "plan_free": "Miễn phí",

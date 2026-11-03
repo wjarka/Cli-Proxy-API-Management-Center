@@ -1,4 +1,27 @@
 {
+  "quota_reserve": {
+    "title": "Proxy reserve",
+    "protected": "{{percent}}% protected now",
+    "amount_unknown": "Protected amount unknown",
+    "status_allowed": "Reserve allows proxy use",
+    "status_reserved": "Proxy blocked by reserve",
+    "status_unknown": "Proxy waiting for quota data",
+    "status_unavailable": "Reserve status unavailable",
+    "next_release": "Next release:",
+    "schedule": "Weekly reserve schedule",
+    "daily": "{{percent}}% per day · release {{time}}",
+    "direct_use": "Direct use can consume this reserve.",
+    "load_failed": "Could not load proxy reserve restrictions. Refresh to retry.",
+    "days": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    }
+  },
   "common": {
     "login": "Login",
     "logout": "Logout",

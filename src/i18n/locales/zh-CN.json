@@ -1,4 +1,27 @@
 {
+  "quota_reserve": {
+    "title": "代理预留额度",
+    "protected": "当前保护 {{percent}}%",
+    "amount_unknown": "受保护额度未知",
+    "status_allowed": "预留规则允许代理使用",
+    "status_reserved": "代理因预留额度暂停使用",
+    "status_unknown": "代理正在等待额度数据",
+    "status_unavailable": "预留额度状态不可用",
+    "next_release": "下次释放：",
+    "schedule": "每周预留额度计划",
+    "daily": "每天 {{percent}}% · {{time}} 释放",
+    "direct_use": "直接使用可消耗此预留额度。",
+    "load_failed": "无法加载代理预留额度限制，请刷新重试。",
+    "days": {
+      "mon": "周一",
+      "tue": "周二",
+      "wed": "周三",
+      "thu": "周四",
+      "fri": "周五",
+      "sat": "周六",
+      "sun": "周日"
+    }
+  },
   "common": {
     "login": "登录",
     "logout": "登出",
