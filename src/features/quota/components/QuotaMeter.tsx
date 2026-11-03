@@ -16,9 +16,10 @@ export interface QuotaMeterProps {
   percent: number | null;
   classes: QuotaClassMap;
   index?: number;
+  protectedPercent?: number | null;
 }
 
-export function QuotaMeter({ percent, classes, index }: QuotaMeterProps) {
+export function QuotaMeter({ percent, classes, index, protectedPercent }: QuotaMeterProps) {
   const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
   const normalized = percent === null ? null : clamp(percent, 0, 100);
   const fillClass =
@@ -35,9 +36,28 @@ export function QuotaMeter({ percent, classes, index }: QuotaMeterProps) {
     style['--meter-index'] = index;
   }
 
+  const floor = protectedPercent == null ? 0 : clamp(protectedPercent, 0, 100);
+  const shaded = Math.min(floor, normalized ?? 0);
+
   return (
-    <div className={classes.quotaBar}>
+    <div className={classes.quotaBar} style={floor > 0 ? { position: 'relative' } : undefined}>
       <div className={`${classes.quotaBarFill} ${fillClass}`} style={style} />
+      {shaded > 0 && (
+        <div
+          aria-hidden="true"
+          data-reserve-shading={shaded}
+          className={classes.quotaBarReserve}
+          style={{ width: `${shaded}%` }}
+        />
+      )}
+      {floor > 0 && (
+        <div
+          aria-hidden="true"
+          data-reserve-floor={floor}
+          className={classes.quotaBarReserveMarker}
+          style={{ left: `calc(${floor}% - 1px)` }}
+        />
+      )}
     </div>
   );
 }

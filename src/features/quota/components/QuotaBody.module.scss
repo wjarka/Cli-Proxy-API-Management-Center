@@ -1,3 +1,4 @@
+@use './reserve' as reserve;
 @use '../../../styles/mixins' as *;
 
 /* ============================================================
@@ -794,4 +795,14 @@
       inset 0 -1.5px 2px rgba(74, 90, 110, 0.4),
       0 0 10px rgba(190, 218, 250, 0.3);
   }
+}
+
+.quotaBarReserve {
+  @include reserve.shading;
+}
+.quotaBarReserveMarker {
+  @include reserve.marker;
+}
+.quotaReserveDetails {
+  @include reserve.details;
 }

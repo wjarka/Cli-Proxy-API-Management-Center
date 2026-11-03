@@ -117,7 +117,9 @@ export function QuotaCard(props: QuotaCardProps) {
         </span>
       </header>
 
-      {reserve && <QuotaReserveDetails reserve={reserve} className={styles.reserveDetails} />}
+      {reserve && status !== 'success' && (
+        <QuotaReserveDetails reserve={reserve} className={quotaClasses.quotaReserveDetails} />
+      )}
 
       <div className={styles.body}>
         {entry.type === 'claude' && status === 'success' && (
@@ -161,7 +163,7 @@ export function QuotaCard(props: QuotaCardProps) {
             {t(`${adapter.i18nPrefix}.load_failed`, { message: errorMessage })}
           </div>
         ) : quota ? (
-          <adapter.Body quota={quota} classes={quotaClasses} />
+          <adapter.Body quota={quota} classes={quotaClasses} reserve={reserve} />
         ) : (
           <div className={styles.idleHint}>{t(`${adapter.i18nPrefix}.idle`)}</div>
         )}

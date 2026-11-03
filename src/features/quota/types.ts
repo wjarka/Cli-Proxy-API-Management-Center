@@ -41,6 +41,9 @@ export interface QuotaClassMap {
   antigravityQuotaGroupTitle: string;
   antigravityQuotaGroupDescription: string;
   // 水位条（QuotaMeter）
+  quotaReserveDetails: string;
+  quotaBarReserve: string;
+  quotaBarReserveMarker: string;
   quotaBar: string;
   quotaBarFill: string;
   quotaBarFillHigh: string;
@@ -76,6 +79,9 @@ export const QUOTA_CLASS_KEYS: readonly (keyof QuotaClassMap)[] = [
   'antigravityQuotaGroupHeader',
   'antigravityQuotaGroupTitle',
   'antigravityQuotaGroupDescription',
+  'quotaReserveDetails',
+  'quotaBarReserve',
+  'quotaBarReserveMarker',
   'quotaBar',
   'quotaBarFill',
   'quotaBarFillHigh',
@@ -97,6 +103,7 @@ export function bindQuotaClasses(module: Record<string, string>, source: string)
 }
 
 export interface QuotaBodyProps<TState> {
+  reserve?: import('@/services/api/quotaReserves').QuotaReserve;
   quota: TState;
   classes: QuotaClassMap;
 }
