@@ -54,7 +54,9 @@ import {
   type AuthFilesStatusFilterMode,
   type AuthFilesSortMode,
 } from '@/features/authFiles/uiState';
-import { useAuthStore, useNotificationStore, useThemeStore } from '@/stores';
+import { useAuthStore, useNotificationStore, useThemeStore, useQuotaStore } from '@/stores';
+import { useQuotaReserves } from '@/features/quota/hooks/useQuotaReserves';
+import { quotaReserveForFile } from '@/services/api/quotaReserves';
 import styles from './AuthFilesPage.module.scss';
 
 const DEFAULT_REGULAR_PAGE_SIZE = 9;
@@ -85,6 +87,12 @@ export function AuthFilesPage() {
   const pageTransitionLayer = usePageTransitionLayer();
   const isCurrentLayer = pageTransitionLayer ? pageTransitionLayer.status === 'current' : true;
   const navigate = useNavigate();
+  const quotaGeneration = useQuotaStore((state) => state.cacheGeneration);
+  const {
+    reserves,
+    unavailable: reservesUnavailable,
+    refresh: refreshReserves,
+  } = useQuotaReserves(connectionStatus === 'connected' && isCurrentLayer, quotaGeneration);
 
   const [filter, setFilter] = useState<'all' | string>('all');
   const [statusFilterMode, setStatusFilterMode] = useState<AuthFilesStatusFilterMode>('all');
@@ -366,8 +374,9 @@ export function AuthFilesPage() {
   const initialLoadDoneRef = useRef(false);
 
   const handleHeaderRefresh = useCallback(async () => {
+    refreshReserves();
     await Promise.all([loadFiles({ background: true }), loadExcluded(), loadModelAlias()]);
-  }, [loadFiles, loadExcluded, loadModelAlias]);
+  }, [loadFiles, loadExcluded, loadModelAlias, refreshReserves]);
 
   useHeaderRefresh(handleHeaderRefresh);
 
@@ -658,6 +667,11 @@ export function AuthFilesPage() {
           }
         />
 
+        {reservesUnavailable && (
+          <div className={styles.errorBanner} role="alert">
+            {t('quota_reserve.load_failed')}
+          </div>
+        )}
         {error && (
           <div className={styles.errorBanner} role="alert">
             {error}
@@ -705,6 +719,7 @@ export function AuthFilesPage() {
               <AuthFileCard
                 key={getQuotaCacheKey(file)}
                 file={file}
+                reserve={quotaReserveForFile(reserves, file)}
                 compact={compactMode}
                 selected={selectedFiles.has(file.name)}
                 resolvedTheme={resolvedTheme}

@@ -14,41 +14,17 @@
 }
 
 @mixin details {
-  margin-top: 6px;
+  margin: 6px 0 0;
   color: var(--text-secondary);
   font-size: 11px;
   line-height: 1.5;
   overflow-wrap: anywhere;
-
-  summary {
-    cursor: pointer;
-  }
   strong {
     font-weight: 500;
   }
-  p {
-    margin: 6px 0;
-  }
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 6px 0;
-  }
-  li {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0 8px;
-  }
-  small {
-    font-size: inherit;
-  }
-  &[data-status='reserved'] summary,
-  &[data-status='unknown'] summary,
-  &[data-status='unavailable'] summary {
+  &[data-status='reserved'],
+  &[data-status='unknown'],
+  &[data-status='unavailable'] {
     color: var(--warning-color);
-  }
-  summary:focus-visible {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
   }
 }

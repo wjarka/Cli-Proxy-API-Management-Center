@@ -96,7 +96,7 @@ describe('main Quota page reserve restrictions', () => {
       ],
     });
     const markup = renderToStaticMarkup(
-      createElement(QuotaReserveDetails, { reserve: reserves['work.json'] })
+      createElement(QuotaReserveDetails, { reserve: reserves['work.json'], compact: false })
     );
     expect(markup).toContain('0% protected now');
     expect(markup).toContain('15% per day');
@@ -108,7 +108,9 @@ describe('main Quota page reserve restrictions', () => {
 
   test('renders the restriction and release in the policy timezone', () => {
     const reserve = normalizeQuotaReserves(routing, overview)['work.json'];
-    const markup = renderToStaticMarkup(createElement(QuotaReserveDetails, { reserve }));
+    const markup = renderToStaticMarkup(
+      createElement(QuotaReserveDetails, { reserve, compact: false })
+    );
     expect(markup).toContain('30% protected now');
     expect(markup).toContain('Proxy blocked by reserve');
     expect(markup).toContain('Next release');
@@ -136,7 +138,9 @@ describe('main Quota page reserve restrictions', () => {
       const reserve = normalizeQuotaReserves(routing, input)['work.json'];
       expect(reserve.status).toBe('unavailable');
       expect(reserve.protectedPercent).toBeNull();
-      const markup = renderToStaticMarkup(createElement(QuotaReserveDetails, { reserve }));
+      const markup = renderToStaticMarkup(
+        createElement(QuotaReserveDetails, { reserve, compact: false })
+      );
       expect(markup).toContain('Reserve status unavailable');
       expect(markup).toContain('15% per day');
     }
@@ -157,7 +161,9 @@ describe('main Quota page reserve restrictions', () => {
         },
       ],
     })['work.json'];
-    const markup = renderToStaticMarkup(createElement(QuotaReserveDetails, { reserve }));
+    const markup = renderToStaticMarkup(
+      createElement(QuotaReserveDetails, { reserve, compact: false })
+    );
     expect(markup).toContain('Proxy waiting for quota data');
     expect(markup).not.toContain('Proxy blocked by reserve');
   });
@@ -179,7 +185,9 @@ describe('main Quota page reserve restrictions', () => {
     })['work.json'];
     expect(reserve.status).toBe('unknown');
     expect(reserve.protectedPercent).toBeNull();
-    const markup = renderToStaticMarkup(createElement(QuotaReserveDetails, { reserve }));
+    const markup = renderToStaticMarkup(
+      createElement(QuotaReserveDetails, { reserve, compact: false })
+    );
     expect(markup).toContain('Protected amount unknown');
     expect(markup).not.toContain('0% protected now');
   });
@@ -295,4 +303,23 @@ test('keeps policy details visible when the provider response has no shared week
     expect(markup).toContain('30% protected now');
     expect(markup).not.toContain('data-reserve-floor');
   }
+});
+
+test('keeps the quota label compact and the complete policy panel on Auth Files', () => {
+  const reserve = normalizeQuotaReserves(routing, overview)['work.json'];
+  const compact = renderToStaticMarkup(
+    createElement(QuotaReserveDetails, { reserve, compact: true })
+  );
+  const full = renderToStaticMarkup(
+    createElement(QuotaReserveDetails, { reserve, compact: false })
+  );
+  expect(compact).toContain('30% protected now');
+  expect(compact).toContain('Proxy blocked by reserve');
+  expect(compact).not.toContain('15% per day');
+  expect(compact).not.toContain('<details');
+  expect(full).toContain('15% per day');
+  expect(full).toContain('Europe/Warsaw');
+  expect(full).toContain('work-account');
+  expect(full).toContain('Next release');
+  expect(full).not.toContain('<details');
 });

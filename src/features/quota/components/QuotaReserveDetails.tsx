@@ -4,9 +4,11 @@ import type { QuotaReserve } from '@/services/api/quotaReserves';
 export function QuotaReserveDetails({
   reserve,
   className,
+  compact = true,
 }: {
   reserve: QuotaReserve;
   className?: string;
+  compact?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const deadline =
@@ -20,25 +22,30 @@ export function QuotaReserveDetails({
       minute: '2-digit',
       hour12: false,
     }).format(new Date(reserve.nextReleaseAt));
+  const amount =
+    reserve.protectedPercent === null
+      ? t('quota_reserve.amount_unknown')
+      : t('quota_reserve.protected', { percent: reserve.protectedPercent });
+  if (compact)
+    return (
+      <p className={className} aria-label={t('quota_reserve.title')} data-status={reserve.status}>
+        <strong>{amount}</strong>
+        {reserve.status !== 'allowed' && (
+          <span> · {t(`quota_reserve.status_${reserve.status}`)}</span>
+        )}
+      </p>
+    );
   return (
-    <details
+    <section
       className={className}
       aria-label={t('quota_reserve.title')}
       data-status={reserve.status}
     >
-      <summary>
-        <strong>
-          {reserve.protectedPercent === null
-            ? t('quota_reserve.amount_unknown')
-            : t('quota_reserve.protected', { percent: reserve.protectedPercent })}
-        </strong>
-        {reserve.status !== 'allowed' && (
-          <span> · {t(`quota_reserve.status_${reserve.status}`)}</span>
-        )}
-      </summary>
-      <p>
-        {reserve.policy} · {t(`quota_reserve.status_${reserve.status}`)}
-      </p>
+      <div>
+        <strong>{amount}</strong>
+        <span>{reserve.policy}</span>
+      </div>
+      <p>{t(`quota_reserve.status_${reserve.status}`)}</p>
       {deadline && (
         <p>
           {t('quota_reserve.next_release')}{' '}
@@ -58,6 +65,6 @@ export function QuotaReserveDetails({
       <small>
         {reserve.timezone} · {t('quota_reserve.direct_use')}
       </small>
-    </details>
+    </section>
   );
 }
