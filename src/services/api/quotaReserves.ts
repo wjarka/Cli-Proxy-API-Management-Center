@@ -13,6 +13,14 @@ export interface QuotaReserve {
   status: 'allowed' | 'reserved' | 'unknown' | 'unavailable';
 }
 
+export function quotaReserveForFile(
+  reserves: Record<string, QuotaReserve>,
+  file: { id?: unknown; name: string }
+): QuotaReserve | undefined {
+  const id = typeof file.id === 'string' && file.id.length > 0 ? file.id : file.name;
+  return reserves[id];
+}
+
 const record = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 const percent = (value: unknown): value is number =>

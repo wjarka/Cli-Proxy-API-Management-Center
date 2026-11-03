@@ -3,7 +3,11 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import i18n from '@/i18n';
 import { apiClient } from '@/services/api/client';
-import { normalizeQuotaReserves, quotaReservesApi } from '@/services/api/quotaReserves';
+import {
+  normalizeQuotaReserves,
+  quotaReservesApi,
+  quotaReserveForFile,
+} from '@/services/api/quotaReserves';
 import { QuotaReserveDetails } from '@/features/quota/components/QuotaReserveDetails';
 
 const routing = {
@@ -48,6 +52,17 @@ afterAll(async () => {
 });
 
 describe('main Quota page reserve restrictions', () => {
+  test('uses the backend credential ID, including when its display filename differs', () => {
+    const reserve = normalizeQuotaReserves(routing, overview)['work.json'];
+    const other = { ...reserve, policy: 'other-account' };
+    const reserves = { 'work.json': reserve, 'Work.json': other };
+    expect(quotaReserveForFile(reserves, { id: 'work.json', name: 'Work.json' })).toBe(reserve);
+    expect(
+      quotaReserveForFile(reserves, { id: 'different.json', name: 'Work.json' })
+    ).toBeUndefined();
+    expect(quotaReserveForFile(reserves, { name: 'Work.json' })).toBe(other);
+    expect(quotaReserveForFile(reserves, { id: '', name: 'Work.json' })).toBe(other);
+  });
   test('joins exact credential bindings with live status and the configured daily schedule', () => {
     const reserves = normalizeQuotaReserves(routing, overview);
     expect(Object.keys(reserves)).toEqual(['work.json']);

@@ -11,6 +11,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { authFilesApi } from '@/services/api';
+import { quotaReserveForFile } from '@/services/api/quotaReserves';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { IconSearch, IconX } from '@/components/ui/icons';
@@ -438,7 +439,7 @@ export function QuotaPage() {
                 key={`${entry.type}:${getQuotaCacheKey(entry.file)}`}
                 entry={entry}
                 quota={getQuota(entry)}
-                reserve={reserves[entry.file.name]}
+                reserve={quotaReserveForFile(reserves, entry.file)}
                 resolvedTheme={resolvedTheme}
                 canRefresh={canUseActions && !entry.file.disabled}
                 resetting={resettingQuotaName === getQuotaCacheKey(entry.file)}
