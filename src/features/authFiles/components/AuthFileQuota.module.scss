@@ -1,3 +1,4 @@
+@use '../../quota/components/reserve' as reserve;
 @use '../../../styles/mixins' as *;
 
 $quota-font-size: 11.5px;
@@ -347,4 +348,14 @@ button.quotaMessageAction {
   .quotaBarFill {
     transition: none;
   }
+}
+
+.quotaBarReserve {
+  @include reserve.shading;
+}
+.quotaBarReserveMarker {
+  @include reserve.marker;
+}
+.quotaReserveDetails {
+  @include reserve.details;
 }

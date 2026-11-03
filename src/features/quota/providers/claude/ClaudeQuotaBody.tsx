@@ -7,12 +7,13 @@ import { useTranslation } from 'react-i18next';
 import type { ClaudeQuotaState } from '@/types';
 import { buildResetDisplay } from '@/utils/quota';
 import { useNow } from '@/hooks/useNow';
+import { QuotaReserveDetails } from '../../components/QuotaReserveDetails';
 import { QuotaMeter } from '../../components/QuotaMeter';
 import { QuotaResetLabel } from '../../components/QuotaResetLabel';
 import { collectQuotaRowInstants, pickUrgentRowId } from '../../resetSchedule';
 import type { QuotaBodyProps } from '../../types';
 
-export function ClaudeQuotaBody({ quota, classes }: QuotaBodyProps<ClaudeQuotaState>) {
+export function ClaudeQuotaBody({ quota, classes, reserve }: QuotaBodyProps<ClaudeQuotaState>) {
   const { t, i18n } = useTranslation();
   const now = useNow();
   const soonestRowId = useMemo(
@@ -73,10 +74,21 @@ export function ClaudeQuotaBody({ quota, classes }: QuotaBodyProps<ClaudeQuotaSt
                   )}
                 </div>
               </div>
-              <QuotaMeter percent={remaining} classes={classes} index={index} />
+              <QuotaMeter
+                percent={remaining}
+                classes={classes}
+                index={index}
+                protectedPercent={window.id === 'seven-day' ? reserve?.protectedPercent : undefined}
+              />
+              {window.id === 'seven-day' && reserve && (
+                <QuotaReserveDetails reserve={reserve} className={classes.quotaReserveDetails} />
+              )}
             </div>
           );
         })
+      )}
+      {reserve && !windows.some((window) => window.id === 'seven-day') && (
+        <QuotaReserveDetails reserve={reserve} className={classes.quotaReserveDetails} />
       )}
     </>
   );

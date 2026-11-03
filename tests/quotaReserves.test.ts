@@ -8,6 +8,9 @@ import {
   quotaReservesApi,
   quotaReserveForFile,
 } from '@/services/api/quotaReserves';
+import { ClaudeQuotaBody } from '@/features/quota/providers/claude/ClaudeQuotaBody';
+import { CodexQuotaBody } from '@/features/quota/providers/codex/CodexQuotaBody';
+import { QUOTA_CLASS_KEYS, bindQuotaClasses } from '@/features/quota/types';
 import { QuotaReserveDetails } from '@/features/quota/components/QuotaReserveDetails';
 
 const routing = {
@@ -213,4 +216,83 @@ describe('main Quota page reserve restrictions', () => {
       revision.mockRestore();
     }
   });
+});
+
+const classes = bindQuotaClasses(
+  Object.fromEntries(QUOTA_CLASS_KEYS.map((key) => [key, key])),
+  'test'
+);
+
+test('marks only the shared weekly bar, clipping protected shading to the remaining balance', () => {
+  const reserve = normalizeQuotaReserves(routing, overview)['work.json'];
+  const markup = renderToStaticMarkup(
+    createElement(ClaudeQuotaBody, {
+      classes,
+      reserve,
+      quota: {
+        status: 'success',
+        windows: [
+          { id: 'five-hour', label: '5h', usedPercent: 80, resetLabel: '', periodHours: 5 },
+          { id: 'seven-day', label: '7d', usedPercent: 80, resetLabel: '', periodHours: 168 },
+          {
+            id: 'seven-day-fable',
+            label: 'Fable',
+            usedPercent: 0,
+            resetLabel: '',
+            periodHours: 168,
+          },
+        ],
+      },
+    })
+  );
+  expect(markup.match(/data-reserve-shading/g)).toHaveLength(1);
+  expect(markup).toContain('data-reserve-shading="20"');
+  expect(markup).toContain('data-reserve-floor="30"');
+  expect(markup).toContain('30% protected now');
+});
+
+test('keeps zero reserve visible beneath the weekly bar without shading a fake portion', () => {
+  const reserve = {
+    ...normalizeQuotaReserves(routing, overview)['work.json'],
+    protectedPercent: 0,
+    status: 'allowed' as const,
+  };
+  const markup = renderToStaticMarkup(
+    createElement(CodexQuotaBody, {
+      classes,
+      reserve,
+      quota: {
+        status: 'success',
+        windows: [
+          { id: 'weekly', label: '7d', usedPercent: 80, resetLabel: '', periodHours: 168 },
+          {
+            id: 'code-review-weekly',
+            label: 'Review',
+            usedPercent: 0,
+            resetLabel: '',
+            periodHours: 168,
+          },
+        ],
+      },
+    })
+  );
+  expect(markup).toContain('0% protected now');
+  expect(markup).not.toContain('data-reserve-shading');
+  expect(markup).not.toContain('data-reserve-floor');
+  expect(markup.match(/0% protected now/g)).toHaveLength(1);
+});
+
+test('keeps policy details visible when the provider response has no shared weekly bar', () => {
+  const reserve = normalizeQuotaReserves(routing, overview)['work.json'];
+  for (const Body of [ClaudeQuotaBody, CodexQuotaBody]) {
+    const markup = renderToStaticMarkup(
+      createElement(Body, {
+        classes,
+        reserve,
+        quota: { status: 'success', windows: [] },
+      })
+    );
+    expect(markup).toContain('30% protected now');
+    expect(markup).not.toContain('data-reserve-floor');
+  }
 });

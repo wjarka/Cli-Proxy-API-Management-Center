@@ -21,20 +21,24 @@ export function QuotaReserveDetails({
       hour12: false,
     }).format(new Date(reserve.nextReleaseAt));
   return (
-    <section
+    <details
       className={className}
       aria-label={t('quota_reserve.title')}
       data-status={reserve.status}
     >
-      <div>
+      <summary>
         <strong>
           {reserve.protectedPercent === null
             ? t('quota_reserve.amount_unknown')
             : t('quota_reserve.protected', { percent: reserve.protectedPercent })}
         </strong>
-        <span>{reserve.policy}</span>
-      </div>
-      <p>{t(`quota_reserve.status_${reserve.status}`)}</p>
+        {reserve.status !== 'allowed' && (
+          <span> · {t(`quota_reserve.status_${reserve.status}`)}</span>
+        )}
+      </summary>
+      <p>
+        {reserve.policy} · {t(`quota_reserve.status_${reserve.status}`)}
+      </p>
       {deadline && (
         <p>
           {t('quota_reserve.next_release')}{' '}
@@ -54,6 +58,6 @@ export function QuotaReserveDetails({
       <small>
         {reserve.timezone} · {t('quota_reserve.direct_use')}
       </small>
-    </section>
+    </details>
   );
 }

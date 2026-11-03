@@ -18,6 +18,7 @@ import {
 import { resolveTimeZoneLabel } from '@/utils/time/timezone';
 import { formatDateTimeValue } from '@/utils/format';
 import { useNow } from '@/hooks/useNow';
+import { QuotaReserveDetails } from '../../components/QuotaReserveDetails';
 import { QuotaMeter } from '../../components/QuotaMeter';
 import { QuotaResetLabel } from '../../components/QuotaResetLabel';
 import { collectQuotaRowInstants, pickUrgentRowId, resetCreditRowId } from '../../resetSchedule';
@@ -31,7 +32,7 @@ const getPlanValueClass = (planType: string | null, classes: QuotaClassMap): str
   return classes.codexPlanValue;
 };
 
-export function CodexQuotaBody({ quota, classes }: QuotaBodyProps<CodexQuotaState>) {
+export function CodexQuotaBody({ quota, classes, reserve }: QuotaBodyProps<CodexQuotaState>) {
   const { t, i18n } = useTranslation();
   const now = useNow();
   const locale = i18n.resolvedLanguage;
@@ -202,11 +203,27 @@ export function CodexQuotaBody({ quota, classes }: QuotaBodyProps<CodexQuotaStat
                   )}
                 </div>
               </div>
-              <QuotaMeter percent={remaining} classes={classes} index={index} />
+              <QuotaMeter
+                percent={remaining}
+                classes={classes}
+                index={index}
+                protectedPercent={
+                  window.id === 'weekly' && window.periodHours === 168
+                    ? reserve?.protectedPercent
+                    : undefined
+                }
+              />
+              {window.id === 'weekly' && window.periodHours === 168 && reserve && (
+                <QuotaReserveDetails reserve={reserve} className={classes.quotaReserveDetails} />
+              )}
             </div>
           );
         })
       )}
+      {reserve &&
+        !windows.some((window) => window.id === 'weekly' && window.periodHours === 168) && (
+          <QuotaReserveDetails reserve={reserve} className={classes.quotaReserveDetails} />
+        )}
     </>
   );
 }
