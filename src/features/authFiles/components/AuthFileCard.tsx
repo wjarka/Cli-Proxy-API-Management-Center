@@ -34,10 +34,13 @@ import { resolveAuthFileQuotaType } from '@/features/authFiles/logic';
 import type { AuthFileStatusBarData } from '@/features/authFiles/hooks/useAuthFilesStatusBarCache';
 import { AuthFileQuotaSection } from '@/features/authFiles/components/AuthFileQuotaSection';
 import { AuthFileCooldownSection } from './AuthFileCooldownSection';
+import { QuotaReserveDetails } from '@/features/quota/components/QuotaReserveDetails';
+import type { QuotaReserve } from '@/services/api/quotaReserves';
 import styles from './AuthFileCard.module.scss';
 
 export type AuthFileCardProps = {
   file: AuthFileItem;
+  reserve?: QuotaReserve;
   compact: boolean;
   selected: boolean;
   resolvedTheme: ResolvedTheme;
@@ -64,6 +67,7 @@ export function AuthFileCard(props: AuthFileCardProps) {
   const { t } = useTranslation();
   const {
     file,
+    reserve,
     compact,
     selected,
     resolvedTheme,
@@ -246,6 +250,9 @@ export function AuthFileCard(props: AuthFileCardProps) {
         )}
       </div>
 
+      {reserve && (
+        <QuotaReserveDetails reserve={reserve} compact={false} className={styles.reserveDetails} />
+      )}
       {showQuotaLayout && quotaType && (
         <AuthFileQuotaSection file={file} quotaType={quotaType} disableControls={disableControls} />
       )}
