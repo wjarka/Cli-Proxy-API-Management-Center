@@ -274,3 +274,32 @@ describe('Claude Fable quota', () => {
     ]);
   });
 });
+
+test('Claude quota retains prior windows and marks a cached 429 reading stale', async () => {
+  const { spyOn } = await import('bun:test');
+  const { apiCallApi } = await import('@/services/api/apiCall');
+  const { CLAUDE_CONFIG } = await import('@/features/quota/providers/claude/data');
+  const request = spyOn(apiCallApi, 'request').mockImplementation(async (input) => {
+    const isUsage = input.url.endsWith('/usage');
+    const body = isUsage ? { seven_day: { utilization: 80, resets_at: modernReset } } : {};
+    return {
+      statusCode: 200,
+      header: {},
+      body,
+      bodyText: JSON.stringify(body),
+      usageStale: isUsage,
+    };
+  });
+  try {
+    const data = await CLAUDE_CONFIG.fetchQuota({ name: 'work.json', auth_index: 'test' }, t);
+    const quota = CLAUDE_CONFIG.buildSuccessState(data);
+    expect(request.mock.calls.some(([input]) => input.cacheClaudeUsage === true)).toBe(true);
+    expect(quota).toMatchObject({
+      status: 'success',
+      stale: true,
+      windows: [{ id: 'seven-day', usedPercent: 80 }],
+    });
+  } finally {
+    request.mockRestore();
+  }
+});

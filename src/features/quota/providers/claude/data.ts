@@ -34,6 +34,7 @@ import type { QuotaProviderData } from '../types';
 
 export type ClaudeQuotaData = {
   windows: ClaudeQuotaWindow[];
+  stale?: boolean;
   extraUsage?: ClaudeExtraUsage | null;
   planType?: string | null;
 };
@@ -191,6 +192,7 @@ const fetchClaudeQuota = async (file: AuthFileItem, t: TFunction): Promise<Claud
       authIndex,
       method: 'GET',
       url: CLAUDE_USAGE_URL,
+      cacheClaudeUsage: true,
       header: { ...CLAUDE_REQUEST_HEADERS },
     }),
     apiCallApi.request({
@@ -226,7 +228,7 @@ const fetchClaudeQuota = async (file: AuthFileItem, t: TFunction): Promise<Claud
         )
       : null;
 
-  return { windows, extraUsage: payload.extra_usage, planType };
+  return { windows, extraUsage: payload.extra_usage, planType, stale: result.usageStale };
 };
 
 export const CLAUDE_CONFIG: QuotaProviderData<ClaudeQuotaState, ClaudeQuotaData> = {
@@ -240,6 +242,7 @@ export const CLAUDE_CONFIG: QuotaProviderData<ClaudeQuotaState, ClaudeQuotaData>
   buildSuccessState: (data) => ({
     status: 'success',
     windows: data.windows,
+    stale: data.stale,
     extraUsage: data.extraUsage,
     planType: data.planType,
   }),

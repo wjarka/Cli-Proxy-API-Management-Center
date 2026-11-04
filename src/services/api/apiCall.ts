@@ -9,6 +9,8 @@ import { isRecord } from '@/utils/helpers';
 export interface ApiCallRequest {
   authIndex?: string;
   proxy_url?: string;
+  cacheClaudeUsage?: boolean;
+  refreshClaudeGrants?: boolean;
   method: string;
   url: string;
   header?: Record<string, string>;
@@ -20,6 +22,7 @@ export interface ApiCallResult<T = unknown> {
   header: Record<string, string[]>;
   bodyText: string;
   body: T | null;
+  usageStale?: boolean;
 }
 
 const normalizeBody = (input: unknown): { bodyText: string; body: unknown | null } => {
@@ -92,6 +95,7 @@ export const apiCallApi = {
       header,
       bodyText,
       body,
+      ...(response?.usage_stale === true ? { usageStale: true } : {}),
     };
   },
 };

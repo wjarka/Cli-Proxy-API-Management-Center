@@ -493,6 +493,7 @@
     "fetch_all": "获取全部"
   },
   "claude_quota": {
+    "stale_usage": "用量数据已过期。当前显示上次获取的数值。",
     "title": "Claude 额度",
     "empty_title": "暂无 Claude OAuth 认证",
     "empty_desc": "使用 Claude OAuth 登录后即可查看额度。",

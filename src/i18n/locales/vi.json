@@ -495,6 +495,7 @@
     "fetch_all": "Lấy tất cả"
   },
   "claude_quota": {
+    "stale_usage": "Dữ liệu sử dụng đã cũ. Đang hiển thị các giá trị gần nhất.",
     "title": "Quota Claude",
     "empty_title": "Không có File OAuth Claude",
     "empty_desc": "Đăng nhập bằng Claude OAuth để xem quota.",

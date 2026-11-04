@@ -1,6 +1,4 @@
-/**
- * Claude 额度渲染体：套餐/额外用量 chip 行 + 用量窗口水位条。
- */
+// Renders Claude plan, extra usage, and quota windows.
 
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +24,11 @@ export function ClaudeQuotaBody({ quota, classes, reserve }: QuotaBodyProps<Clau
 
   return (
     <>
+      {quota.stale && (
+        <div role="status" className={classes.quotaMessage}>
+          {t('claude_quota.stale_usage')}
+        </div>
+      )}
       {planType && (
         <div className={classes.codexPlan}>
           <span className={classes.codexPlanLabel}>{t('claude_quota.plan_label')}</span>
