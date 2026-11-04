@@ -179,6 +179,7 @@ export interface ClaudeQuotaWindow {
 export interface ClaudeQuotaState {
   status: 'idle' | 'loading' | 'success' | 'error';
   windows: ClaudeQuotaWindow[];
+  stale?: boolean;
   extraUsage?: ClaudeExtraUsage | null;
   planType?: string | null;
   error?: string;

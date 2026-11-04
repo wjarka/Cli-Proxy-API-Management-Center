@@ -493,6 +493,7 @@
     "fetch_all": "取得全部"
   },
   "claude_quota": {
+    "stale_usage": "用量資料已過期。目前顯示上次取得的數值。",
     "title": "Claude 配額",
     "empty_title": "暫無 Claude OAuth 驗證",
     "empty_desc": "使用 Claude OAuth 登入後即可查看配額。",
