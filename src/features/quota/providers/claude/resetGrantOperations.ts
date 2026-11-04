@@ -17,7 +17,7 @@ type Operation = {
 };
 const defaultDependencies = {
   revision: () => apiClient.getConnectionRevision(),
-  readStatus: readClaudeResetGrants,
+  readStatus: (authIndex: string) => readClaudeResetGrants(authIndex, true),
   readOrganization: readClaudeOrganization,
   claim: claimClaudeResetGrant,
   now: () => Date.now(),

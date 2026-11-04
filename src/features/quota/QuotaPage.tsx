@@ -260,10 +260,9 @@ export function QuotaPage() {
   // 刷新全部：先重取文件列表，待其落定（loading 下降沿）再批量拉当前页额度
   const handleRefreshAll = useCallback(() => {
     if (disableControls) return;
-    refreshReserves();
     pendingRefreshRef.current = sessionGeneration;
     void loadFiles();
-  }, [disableControls, loadFiles, sessionGeneration, refreshReserves]);
+  }, [disableControls, loadFiles, sessionGeneration]);
 
   useEffect(() => {
     const wasLoading = prevLoadingRef.current;
@@ -287,9 +286,20 @@ export function QuotaPage() {
         disableControls
       )
     ) {
-      void loadQuota(pageItems);
+      void loadQuota(pageItems).then(() => {
+        if (useQuotaStore.getState().cacheGeneration === requestedSession) refreshReserves();
+      });
     }
-  }, [disableControls, error, filesGeneration, loading, loadQuota, pageItems, sessionGeneration]);
+  }, [
+    disableControls,
+    error,
+    filesGeneration,
+    loading,
+    loadQuota,
+    pageItems,
+    refreshReserves,
+    sessionGeneration,
+  ]);
 
   useDevinQuotaAutoLoad(
     pageItems,
@@ -444,7 +454,18 @@ export function QuotaPage() {
                 canRefresh={canUseActions && !entry.file.disabled}
                 resetting={resettingQuotaName === getQuotaCacheKey(entry.file)}
                 entranceDelayMs={cardEntranceDelay(index)}
-                onRefresh={() => void refreshQuota(entry.file, QUOTA_ADAPTERS[entry.type])}
+                onRefresh={() => {
+                  const generation = useQuotaStore.getState().cacheGeneration;
+                  void refreshQuota(entry.file, QUOTA_ADAPTERS[entry.type]).then(() => {
+                    if (
+                      entry.type === 'claude' &&
+                      useQuotaStore.getState().cacheGeneration === generation &&
+                      quotaReserveForFile(reserves, entry.file)
+                    ) {
+                      refreshReserves();
+                    }
+                  });
+                }}
                 onReset={() => resetQuota(entry.file, QUOTA_ADAPTERS[entry.type])}
               />
             ))}

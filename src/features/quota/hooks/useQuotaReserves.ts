@@ -10,7 +10,7 @@ interface Snapshot {
   unavailable: boolean;
 }
 
-/** Page-owned polling; never commit responses from a replaced connection. */
+/** Load on entry or explicit refresh, scoped to the current connection. */
 export function useQuotaReserves(connected: boolean, generation: number) {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [reload, setReload] = useState(0);
@@ -38,13 +38,9 @@ export function useQuotaReserves(connected: boolean, generation: number) {
       }
     };
     void load();
-    const interval = setInterval(() => {
-      void load();
-    }, 30_000);
     return () => {
       cancelled = true;
       controller.abort();
-      clearInterval(interval);
     };
   }, [connected, generation, revision, reload]);
   const visible =

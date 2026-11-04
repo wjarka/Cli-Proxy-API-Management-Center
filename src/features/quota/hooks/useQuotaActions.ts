@@ -49,7 +49,9 @@ export function useQuotaActions(disableControls: boolean) {
             [cacheKey]: successState,
           }));
           void enrichQuotaInBackground(adapter, file, data, successState, t);
-          showNotification(t('auth_files.quota_refresh_success', { name: file.name }), 'success');
+          if (!('stale' in successState && successState.stale)) {
+            showNotification(t('auth_files.quota_refresh_success', { name: file.name }), 'success');
+          }
         });
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : t('common.unknown_error');

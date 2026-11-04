@@ -1,10 +1,6 @@
 /**
- * 额度卡片：头部（提供商图标 + mono 文件名）+ 四态 body + 动作 footer。
- *
- * - idle：整个 body 是一个点击加载按钮（上游直连有速率考虑，不自动拉取）；
- * - loading：双幽灵行骨架（aria-busy，文字等价视觉隐藏）；
- * - error：失败色条 + footer 刷新即重试；
- * - success：provider Body（穿 QuotaBody.module.scss 全页外衣）。
+ * Shows a load action while idle, an accessible skeleton while loading, an error
+ * with a retry action on failure, or the provider's quota body on success.
  */
 
 import { useState, type CSSProperties } from 'react';
@@ -73,7 +69,7 @@ export function QuotaCard(props: QuotaCardProps) {
   const loading = status === 'loading';
   const claudeReset = useClaudeResetGrants(
     file,
-    entry.type === 'claude' && status !== 'idle',
+    entry.type === 'claude' && status === 'success' && !(quota && 'stale' in quota && quota.stale),
     !canRefresh || loading || resetting,
     quota,
     onRefresh
