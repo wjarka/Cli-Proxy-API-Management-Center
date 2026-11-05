@@ -26,6 +26,11 @@ afterEach(() => {
   apiCallApi.request = originalRequest;
 });
 
+test('read throttling is distinct from other upstream failures', async () => {
+  apiCallApi.request = async () => ({ statusCode: 429, header: {}, body: {} });
+  await expect(readClaudeResetGrants('work')).rejects.toMatchObject({ code: 'rate_limited' });
+});
+
 describe('Claude reset grant fail-closed parsing', () => {
   test('valid block and refusing defaults', () => {
     expect(status().grants[0].useRequiresLimit).toBe(true);
