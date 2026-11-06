@@ -1,4 +1,15 @@
 {
+  "quota_usage": {
+    "title": "Bảo vệ 5 giờ",
+    "status_allowed": "Bảo vệ 5 giờ cho phép dùng proxy",
+    "status_reserved": "Proxy bị chặn bởi bảo vệ 5 giờ",
+    "status_unknown": "Proxy đang chờ dữ liệu hạn mức",
+    "status_unavailable": "Không có trạng thái bảo vệ",
+    "status_inactive": "Ngoài giờ bảo vệ",
+    "configured": "{{percent}}% trong giờ bảo vệ",
+    "active_until": "Bảo vệ đến:",
+    "schedule": "Lịch bảo vệ 5 giờ"
+  },
   "quota_reserve": {
     "title": "Hạn mức dự trữ cho proxy",
     "protected": "Đang bảo vệ {{percent}}%",

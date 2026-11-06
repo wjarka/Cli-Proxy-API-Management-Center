@@ -6,12 +6,18 @@ import type { ClaudeQuotaState } from '@/types';
 import { buildResetDisplay } from '@/utils/quota';
 import { useNow } from '@/hooks/useNow';
 import { QuotaReserveDetails } from '../../components/QuotaReserveDetails';
+import { QuotaUsageDetails } from '../../components/QuotaUsageDetails';
 import { QuotaMeter } from '../../components/QuotaMeter';
 import { QuotaResetLabel } from '../../components/QuotaResetLabel';
 import { collectQuotaRowInstants, pickUrgentRowId } from '../../resetSchedule';
 import type { QuotaBodyProps } from '../../types';
 
-export function ClaudeQuotaBody({ quota, classes, reserve }: QuotaBodyProps<ClaudeQuotaState>) {
+export function ClaudeQuotaBody({
+  quota,
+  classes,
+  reserve,
+  usagePolicy,
+}: QuotaBodyProps<ClaudeQuotaState>) {
   const { t, i18n } = useTranslation();
   const now = useNow();
   const soonestRowId = useMemo(
@@ -81,8 +87,20 @@ export function ClaudeQuotaBody({ quota, classes, reserve }: QuotaBodyProps<Clau
                 percent={remaining}
                 classes={classes}
                 index={index}
-                protectedPercent={window.id === 'seven-day' ? reserve?.protectedPercent : undefined}
+                protectedPercent={
+                  window.id === 'seven-day'
+                    ? reserve?.protectedPercent
+                    : window.id === 'five-hour'
+                      ? usagePolicy?.protectedPercent
+                      : undefined
+                }
               />
+              {window.id === 'five-hour' && usagePolicy && (
+                <QuotaUsageDetails
+                  usagePolicy={usagePolicy}
+                  className={classes.quotaReserveDetails}
+                />
+              )}
               {window.id === 'seven-day' && reserve && (
                 <QuotaReserveDetails reserve={reserve} className={classes.quotaReserveDetails} />
               )}
@@ -92,6 +110,9 @@ export function ClaudeQuotaBody({ quota, classes, reserve }: QuotaBodyProps<Clau
       )}
       {reserve && !windows.some((window) => window.id === 'seven-day') && (
         <QuotaReserveDetails reserve={reserve} className={classes.quotaReserveDetails} />
+      )}
+      {usagePolicy && !windows.some((window) => window.id === 'five-hour') && (
+        <QuotaUsageDetails usagePolicy={usagePolicy} className={classes.quotaReserveDetails} />
       )}
     </>
   );

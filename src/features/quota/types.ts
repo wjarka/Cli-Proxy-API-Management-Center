@@ -103,6 +103,7 @@ export function bindQuotaClasses(module: Record<string, string>, source: string)
 }
 
 export interface QuotaBodyProps<TState> {
+  usagePolicy?: import('@/services/api/quotaUsagePolicies').QuotaUsagePolicy;
   reserve?: import('@/services/api/quotaReserves').QuotaReserve;
   quota: TState;
   classes: QuotaClassMap;

@@ -90,6 +90,7 @@ export function AuthFilesPage() {
   const quotaGeneration = useQuotaStore((state) => state.cacheGeneration);
   const {
     reserves,
+    usagePolicies,
     unavailable: reservesUnavailable,
     refresh: refreshReserves,
   } = useQuotaReserves(connectionStatus === 'connected' && isCurrentLayer, quotaGeneration);
@@ -720,6 +721,7 @@ export function AuthFilesPage() {
                 key={getQuotaCacheKey(file)}
                 file={file}
                 reserve={quotaReserveForFile(reserves, file)}
+                usagePolicy={quotaReserveForFile(usagePolicies, file)}
                 compact={compactMode}
                 selected={selectedFiles.has(file.name)}
                 resolvedTheme={resolvedTheme}

@@ -1,4 +1,15 @@
 {
+  "quota_usage": {
+    "title": "5 小時保護",
+    "status_allowed": "5 小時保護允許代理使用",
+    "status_reserved": "代理已被 5 小時保護阻止",
+    "status_unknown": "代理正在等待配額資料",
+    "status_unavailable": "保護狀態無法取得",
+    "status_inactive": "目前不在保護時段",
+    "configured": "保護時段內保留 {{percent}}%",
+    "active_until": "保護至：",
+    "schedule": "5 小時保護時間表"
+  },
   "quota_reserve": {
     "title": "代理預留額度",
     "protected": "目前保護 {{percent}}%",
