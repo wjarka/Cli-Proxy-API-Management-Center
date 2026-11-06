@@ -1,4 +1,15 @@
 {
+  "quota_usage": {
+    "title": "5h protection",
+    "status_allowed": "5h protection allows proxy use",
+    "status_reserved": "Proxy blocked by 5h protection",
+    "status_unknown": "Proxy waiting for quota data",
+    "status_unavailable": "Protection status unavailable",
+    "status_inactive": "Outside protected hours",
+    "configured": "{{percent}}% during protected hours",
+    "active_until": "Protected until:",
+    "schedule": "5h protection schedule"
+  },
   "quota_reserve": {
     "title": "Proxy reserve",
     "protected": "{{percent}}% protected now",

@@ -118,6 +118,7 @@ export function QuotaPage() {
 
   const {
     reserves,
+    usagePolicies,
     unavailable: reservesUnavailable,
     refresh: refreshReserves,
   } = useQuotaReserves(connectionStatus === 'connected', sessionGeneration);
@@ -450,6 +451,7 @@ export function QuotaPage() {
                 entry={entry}
                 quota={getQuota(entry)}
                 reserve={quotaReserveForFile(reserves, entry.file)}
+                usagePolicy={quotaReserveForFile(usagePolicies, entry.file)}
                 resolvedTheme={resolvedTheme}
                 canRefresh={canUseActions && !entry.file.disabled}
                 resetting={resettingQuotaName === getQuotaCacheKey(entry.file)}

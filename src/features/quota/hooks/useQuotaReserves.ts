@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { apiClient } from '@/services/api/client';
 import { quotaReservesApi, type QuotaReserve } from '@/services/api/quotaReserves';
+import type { QuotaUsagePolicy } from '@/services/api/quotaUsagePolicies';
 import { useQuotaStore } from '@/stores/useQuotaStore';
 
 interface Snapshot {
   generation: number;
   revision: number;
   reserves: Record<string, QuotaReserve>;
+  usagePolicies: Record<string, QuotaUsagePolicy>;
   unavailable: boolean;
 }
 
@@ -29,10 +31,11 @@ export function useQuotaReserves(connected: boolean, generation: number) {
       if (busy || !current()) return;
       busy = true;
       try {
-        const reserves = await quotaReservesApi.get(controller.signal);
-        if (current()) setSnapshot({ generation, revision, reserves, unavailable: false });
+        const protections = await quotaReservesApi.getProtections(controller.signal);
+        if (current()) setSnapshot({ generation, revision, ...protections, unavailable: false });
       } catch {
-        if (current()) setSnapshot({ generation, revision, reserves: {}, unavailable: true });
+        if (current())
+          setSnapshot({ generation, revision, reserves: {}, usagePolicies: {}, unavailable: true });
       } finally {
         busy = false;
       }
@@ -47,6 +50,7 @@ export function useQuotaReserves(connected: boolean, generation: number) {
     connected && snapshot?.generation === generation && snapshot.revision === revision;
   return {
     reserves: visible ? snapshot.reserves : {},
+    usagePolicies: visible ? snapshot.usagePolicies : {},
     unavailable: visible ? snapshot.unavailable : false,
     refresh,
   };

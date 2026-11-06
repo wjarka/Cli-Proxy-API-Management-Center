@@ -24,6 +24,8 @@ import bodyStyles from './QuotaBody.module.scss';
 import styles from './QuotaCard.module.scss';
 import type { QuotaReserve } from '@/services/api/quotaReserves';
 import { QuotaReserveDetails } from './QuotaReserveDetails';
+import { QuotaUsageDetails } from './QuotaUsageDetails';
+import type { QuotaUsagePolicy } from '@/services/api/quotaUsagePolicies';
 
 /** 额度页全页外衣：QuotaBody 模块绑定成类型化契约（缺键在模块初始化即抛）。 */
 const quotaClasses = bindQuotaClasses(bodyStyles, 'QuotaBody.module.scss');
@@ -32,6 +34,7 @@ export type QuotaCardProps = {
   entry: QuotaFileEntry;
   quota?: QuotaCardState;
   reserve?: QuotaReserve;
+  usagePolicy?: QuotaUsagePolicy;
   resolvedTheme: ResolvedTheme;
   canRefresh: boolean;
   resetting: boolean;
@@ -46,6 +49,7 @@ export function QuotaCard(props: QuotaCardProps) {
     entry,
     quota,
     reserve,
+    usagePolicy,
     resolvedTheme,
     canRefresh,
     resetting,
@@ -116,6 +120,9 @@ export function QuotaCard(props: QuotaCardProps) {
       {reserve && status !== 'success' && (
         <QuotaReserveDetails reserve={reserve} className={quotaClasses.quotaReserveDetails} />
       )}
+      {usagePolicy && status !== 'success' && (
+        <QuotaUsageDetails usagePolicy={usagePolicy} className={quotaClasses.quotaReserveDetails} />
+      )}
 
       <div className={styles.body}>
         {entry.type === 'claude' && status === 'success' && (
@@ -159,7 +166,12 @@ export function QuotaCard(props: QuotaCardProps) {
             {t(`${adapter.i18nPrefix}.load_failed`, { message: errorMessage })}
           </div>
         ) : quota ? (
-          <adapter.Body quota={quota} classes={quotaClasses} reserve={reserve} />
+          <adapter.Body
+            quota={quota}
+            classes={quotaClasses}
+            reserve={reserve}
+            usagePolicy={usagePolicy}
+          />
         ) : (
           <div className={styles.idleHint}>{t(`${adapter.i18nPrefix}.idle`)}</div>
         )}

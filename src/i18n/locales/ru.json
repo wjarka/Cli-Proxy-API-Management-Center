@@ -1,4 +1,15 @@
 {
+  "quota_usage": {
+    "title": "Защита 5 ч",
+    "status_allowed": "Защита 5 ч разрешает использование прокси",
+    "status_reserved": "Прокси заблокирован защитой 5 ч",
+    "status_unknown": "Прокси ожидает данные квоты",
+    "status_unavailable": "Статус защиты недоступен",
+    "status_inactive": "Вне часов защиты",
+    "configured": "{{percent}}% в часы защиты",
+    "active_until": "Защита до:",
+    "schedule": "Расписание защиты 5 ч"
+  },
   "quota_reserve": {
     "title": "Резерв прокси",
     "protected": "Сейчас защищено {{percent}}%",

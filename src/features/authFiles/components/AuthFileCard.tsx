@@ -35,12 +35,15 @@ import type { AuthFileStatusBarData } from '@/features/authFiles/hooks/useAuthFi
 import { AuthFileQuotaSection } from '@/features/authFiles/components/AuthFileQuotaSection';
 import { AuthFileCooldownSection } from './AuthFileCooldownSection';
 import { QuotaReserveDetails } from '@/features/quota/components/QuotaReserveDetails';
+import { QuotaUsageDetails } from '@/features/quota/components/QuotaUsageDetails';
+import type { QuotaUsagePolicy } from '@/services/api/quotaUsagePolicies';
 import type { QuotaReserve } from '@/services/api/quotaReserves';
 import styles from './AuthFileCard.module.scss';
 
 export type AuthFileCardProps = {
   file: AuthFileItem;
   reserve?: QuotaReserve;
+  usagePolicy?: QuotaUsagePolicy;
   compact: boolean;
   selected: boolean;
   resolvedTheme: ResolvedTheme;
@@ -68,6 +71,7 @@ export function AuthFileCard(props: AuthFileCardProps) {
   const {
     file,
     reserve,
+    usagePolicy,
     compact,
     selected,
     resolvedTheme,
@@ -252,6 +256,13 @@ export function AuthFileCard(props: AuthFileCardProps) {
 
       {reserve && (
         <QuotaReserveDetails reserve={reserve} compact={false} className={styles.reserveDetails} />
+      )}
+      {usagePolicy && (
+        <QuotaUsageDetails
+          usagePolicy={usagePolicy}
+          compact={false}
+          className={styles.reserveDetails}
+        />
       )}
       {showQuotaLayout && quotaType && (
         <AuthFileQuotaSection file={file} quotaType={quotaType} disableControls={disableControls} />

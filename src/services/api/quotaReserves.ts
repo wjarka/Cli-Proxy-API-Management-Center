@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import { normalizeQuotaUsagePolicies } from './quotaUsagePolicies';
 
 export const RESERVE_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 export type ReserveDay = (typeof RESERVE_DAYS)[number];
@@ -13,10 +14,10 @@ export interface QuotaReserve {
   status: 'allowed' | 'reserved' | 'unknown' | 'unavailable';
 }
 
-export function quotaReserveForFile(
-  reserves: Record<string, QuotaReserve>,
+export function quotaReserveForFile<T>(
+  reserves: Record<string, T>,
   file: { id?: unknown; name: string }
-): QuotaReserve | undefined {
+): T | undefined {
   const id = typeof file.id === 'string' && file.id.length > 0 ? file.id : file.name;
   return reserves[id];
 }
@@ -45,6 +46,13 @@ export function normalizeQuotaReserves(
   const statuses = new Map(accounts.filter(record).map((account) => [account.id, account.reserve]));
   const result: Record<string, QuotaReserve> = Object.create(null);
   for (const binding of bindings) {
+    if (
+      record(binding) &&
+      typeof binding.account === 'string' &&
+      binding['reserve-policy'] == null &&
+      typeof binding['usage-policy'] === 'string'
+    )
+      continue;
     if (
       !record(binding) ||
       typeof binding.account !== 'string' ||
@@ -101,11 +109,16 @@ export function normalizeQuotaReserves(
 
 export const quotaReservesApi = {
   async get(signal?: AbortSignal): Promise<Record<string, QuotaReserve>> {
+    return (await quotaReservesApi.getProtections(signal)).reserves;
+  },
+  async getProtections(signal?: AbortSignal) {
     const revision = apiClient.getConnectionRevision();
     const routing = await apiClient.get('/config/routing', { signal });
     if (revision !== apiClient.getConnectionRevision()) throw Error('Connection changed');
     const configured = normalizeQuotaReserves(routing, null);
-    if (Object.keys(configured).length === 0) return configured;
+    const configuredUsage = normalizeQuotaUsagePolicies(routing, null);
+    if (Object.keys(configured).length === 0 && Object.keys(configuredUsage).length === 0)
+      return { reserves: configured, usagePolicies: configuredUsage };
     let overview: unknown;
     try {
       overview = await apiClient.get('/credentials/quota-overview', { signal });
@@ -114,6 +127,9 @@ export const quotaReservesApi = {
       overview = null;
     }
     if (revision !== apiClient.getConnectionRevision()) throw Error('Connection changed');
-    return normalizeQuotaReserves(routing, overview);
+    return {
+      reserves: normalizeQuotaReserves(routing, overview),
+      usagePolicies: normalizeQuotaUsagePolicies(routing, overview),
+    };
   },
 };

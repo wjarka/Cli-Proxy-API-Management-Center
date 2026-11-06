@@ -19,6 +19,7 @@ import { resolveTimeZoneLabel } from '@/utils/time/timezone';
 import { formatDateTimeValue } from '@/utils/format';
 import { useNow } from '@/hooks/useNow';
 import { QuotaReserveDetails } from '../../components/QuotaReserveDetails';
+import { QuotaUsageDetails } from '../../components/QuotaUsageDetails';
 import { QuotaMeter } from '../../components/QuotaMeter';
 import { QuotaResetLabel } from '../../components/QuotaResetLabel';
 import { collectQuotaRowInstants, pickUrgentRowId, resetCreditRowId } from '../../resetSchedule';
@@ -32,7 +33,12 @@ const getPlanValueClass = (planType: string | null, classes: QuotaClassMap): str
   return classes.codexPlanValue;
 };
 
-export function CodexQuotaBody({ quota, classes, reserve }: QuotaBodyProps<CodexQuotaState>) {
+export function CodexQuotaBody({
+  quota,
+  classes,
+  reserve,
+  usagePolicy,
+}: QuotaBodyProps<CodexQuotaState>) {
   const { t, i18n } = useTranslation();
   const now = useNow();
   const locale = i18n.resolvedLanguage;
@@ -210,9 +216,17 @@ export function CodexQuotaBody({ quota, classes, reserve }: QuotaBodyProps<Codex
                 protectedPercent={
                   window.id === 'weekly' && window.periodHours === 168
                     ? reserve?.protectedPercent
-                    : undefined
+                    : window.id === 'five-hour' && window.periodHours === 5
+                      ? usagePolicy?.protectedPercent
+                      : undefined
                 }
               />
+              {window.id === 'five-hour' && window.periodHours === 5 && usagePolicy && (
+                <QuotaUsageDetails
+                  usagePolicy={usagePolicy}
+                  className={classes.quotaReserveDetails}
+                />
+              )}
               {window.id === 'weekly' && window.periodHours === 168 && reserve && (
                 <QuotaReserveDetails reserve={reserve} className={classes.quotaReserveDetails} />
               )}
@@ -223,6 +237,10 @@ export function CodexQuotaBody({ quota, classes, reserve }: QuotaBodyProps<Codex
       {reserve &&
         !windows.some((window) => window.id === 'weekly' && window.periodHours === 168) && (
           <QuotaReserveDetails reserve={reserve} className={classes.quotaReserveDetails} />
+        )}
+      {usagePolicy &&
+        !windows.some((window) => window.id === 'five-hour' && window.periodHours === 5) && (
+          <QuotaUsageDetails usagePolicy={usagePolicy} className={classes.quotaReserveDetails} />
         )}
     </>
   );
