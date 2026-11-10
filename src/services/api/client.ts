@@ -22,7 +22,7 @@ class ApiClient {
   private managementKey: string = '';
   private connectionRevision = 0;
 
-  constructor() {
+  constructor(private readonly emitEvents: () => boolean = () => true) {
     this.instance = axios.create({
       timeout: REQUEST_TIMEOUT_MS,
       headers: {
@@ -54,6 +54,14 @@ class ApiClient {
   /** Guards read/modify/write operations across connection changes, including ABA switches. */
   getConnectionRevision(): number {
     return this.connectionRevision;
+  }
+
+  /** Pins cleanup requests to the original connection; stale replies cannot log out its successor. */
+  createConnectionScope(): ApiClient {
+    const revision = this.connectionRevision;
+    const scope = new ApiClient(() => this.connectionRevision === revision && this.emitEvents());
+    scope.setConfig({ apiBase: this.apiBase, managementKey: this.managementKey });
+    return scope;
   }
 
   private readHeader(headers: Record<string, unknown> | undefined, keys: string[]): string | null {
@@ -138,14 +146,14 @@ class ApiClient {
         const supportsPlugin = this.readBooleanHeader(headers, CPA_SUPPORT_PLUGIN_HEADER_KEYS);
 
         // 触发版本更新事件（后续通过 store 处理）
-        if (version || buildDate) {
+        if (this.emitEvents() && (version || buildDate)) {
           window.dispatchEvent(
             new CustomEvent('server-version-update', {
               detail: { version: version || null, buildDate: buildDate || null },
             })
           );
         }
-        if (supportsPlugin !== null) {
+        if (this.emitEvents() && supportsPlugin !== null) {
           window.dispatchEvent(
             new CustomEvent('server-plugin-support-update', {
               detail: { supportsPlugin },
@@ -175,7 +183,7 @@ class ApiClient {
       apiError.data = responseData;
 
       // 401 未授权 - 触发登出事件
-      if (error.response?.status === 401) {
+      if (this.emitEvents() && error.response?.status === 401) {
         window.dispatchEvent(new Event('unauthorized'));
       }
 

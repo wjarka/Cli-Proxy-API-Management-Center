@@ -17,6 +17,7 @@ import {
 } from '@/services/api/billing';
 import { apiClient } from '@/services/api/client';
 import { useAuthStore } from '@/stores';
+import { BillingBrowserLogin } from './BillingBrowserLogin';
 import { BillingAccounts } from './BillingAccounts';
 import { buildLoginCommand, createBillingRequestGuard } from './logic';
 import styles from './BillingPage.module.scss';
@@ -109,6 +110,7 @@ function BillingSession({ apiBase, connected }: { apiBase: string; connected: bo
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [editing, setEditing] = useState(false);
+  const [editorRevision, setEditorRevision] = useState(0);
   const [target, setTarget] = useState<BillingConnection | null>(null);
   const [provider, setProvider] = useState<BillingProvider>('claude');
   const [label, setLabel] = useState('');
@@ -167,6 +169,7 @@ function BillingSession({ apiBase, connected }: { apiBase: string; connected: bo
     setLabel('');
   };
   const openImport = (connection: BillingConnection | null) => {
+    setEditorRevision((value) => value + 1);
     setSession('');
     setTarget(connection);
     setProvider(connection?.provider ?? 'claude');
@@ -306,55 +309,72 @@ function BillingSession({ apiBase, connected }: { apiBase: string; connected: bo
                     disabled={busy}
                   />
                 )}
-                <h3>{t('billing.local_login')}</h3>
-                <p>{t('billing.helper_hint')}</p>
-                <div className={styles.actions}>
-                  <Button variant="secondary" disabled={busy} onClick={() => void downloadHelper()}>
-                    {t('billing.download_helper')}
-                  </Button>
-                  <Button variant="secondary" disabled={busy} onClick={() => void copyCommand()}>
-                    {t('billing.copy_command')}
-                  </Button>
-                </div>
-                <pre className={styles.command}>
-                  <code>{command}</code>
-                </pre>
-                <p>{t('billing.helper_key_hint')}</p>
+                <BillingBrowserLogin
+                  key={`${editorRevision}:${provider}:${target?.id ?? 'new'}`}
+                  request={{ provider, label: label.trim(), connectionId: target?.id }}
+                  apiBase={apiBase}
+                  current={current}
+                  onSuccess={async () => {
+                    closeImport();
+                    await load();
+                  }}
+                />
                 <details>
-                  <summary>{t('billing.manual_import')}</summary>
-                  <p>
-                    {t(
-                      provider === 'claude'
-                        ? 'billing.claude_session_hint'
-                        : 'billing.openai_session_hint'
-                    )}
-                  </p>
-                  <form
-                    onSubmit={(event) => {
-                      event.preventDefault();
-                      if (!session.trim() || busy) return;
-                      const imported = session.trim();
-                      setSession('');
-                      void run(async () => {
-                        if (target) await billingApi.reconnect(target.id, imported);
-                        else await billingApi.connect(provider, label.trim(), imported);
-                        if (current()) closeImport();
-                      });
-                    }}
-                  >
-                    <Input
-                      label={t('billing.session')}
-                      type="password"
-                      autoComplete="off"
-                      spellCheck={false}
-                      value={session}
-                      onChange={(event) => setSession(event.target.value)}
+                  <summary>{t('billing.browser_alternative')}</summary>
+                  <h3>{t('billing.local_login')}</h3>
+                  <p>{t('billing.helper_hint')}</p>
+                  <div className={styles.actions}>
+                    <Button
+                      variant="secondary"
                       disabled={busy}
-                    />
-                    <Button type="submit" disabled={busy || !session.trim()}>
-                      {t('billing.import_session')}
+                      onClick={() => void downloadHelper()}
+                    >
+                      {t('billing.download_helper')}
                     </Button>
-                  </form>
+                    <Button variant="secondary" disabled={busy} onClick={() => void copyCommand()}>
+                      {t('billing.copy_command')}
+                    </Button>
+                  </div>
+                  <pre className={styles.command}>
+                    <code>{command}</code>
+                  </pre>
+                  <p>{t('billing.helper_key_hint')}</p>
+                  <details>
+                    <summary>{t('billing.manual_import')}</summary>
+                    <p>
+                      {t(
+                        provider === 'claude'
+                          ? 'billing.claude_session_hint'
+                          : 'billing.openai_session_hint'
+                      )}
+                    </p>
+                    <form
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        if (!session.trim() || busy) return;
+                        const imported = session.trim();
+                        setSession('');
+                        void run(async () => {
+                          if (target) await billingApi.reconnect(target.id, imported);
+                          else await billingApi.connect(provider, label.trim(), imported);
+                          if (current()) closeImport();
+                        });
+                      }}
+                    >
+                      <Input
+                        label={t('billing.session')}
+                        type="password"
+                        autoComplete="off"
+                        spellCheck={false}
+                        value={session}
+                        onChange={(event) => setSession(event.target.value)}
+                        disabled={busy}
+                      />
+                      <Button type="submit" disabled={busy || !session.trim()}>
+                        {t('billing.import_session')}
+                      </Button>
+                    </form>
+                  </details>
                 </details>
                 <div className={styles.actions}>
                   <Button variant="ghost" disabled={busy} onClick={closeImport}>

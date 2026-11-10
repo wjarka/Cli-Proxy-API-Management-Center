@@ -94,6 +94,10 @@ const errorKeys: Record<string, string> = {
   organization_not_connected: 'error_organization_not_connected',
   organization_verification_failed: 'error_organization_verification_failed',
   console_operation_failed: 'action_failed',
+  browser_unavailable: 'browser_unavailable',
+  browser_busy: 'browser_busy',
+  browser_expired: 'browser_expired',
+  login_not_ready: 'browser_not_ready',
 };
 const safeErrorCode = (value: unknown): string | null =>
   typeof value === 'string' && Object.prototype.hasOwnProperty.call(errorKeys, value)
@@ -185,3 +189,66 @@ export const billingApi = {
   loginHelper: async (): Promise<string> =>
     (await apiClient.getRaw('/billing/login-helper', { responseType: 'text' })).data,
 };
+
+export interface BillingBrowserSession {
+  id: string;
+  provider: BillingProvider;
+  status: 'ready';
+  expiresAt: string;
+}
+export interface BillingBrowserRequest {
+  provider: BillingProvider;
+  label: string;
+  connectionId?: string;
+}
+export interface BillingBrowserCapability {
+  available: boolean;
+  maxSessions: number;
+  ttlSeconds: number;
+}
+const invalidBrowserResponse = () => new Error('invalid_response');
+export function normalizeBrowserSession(value: unknown): BillingBrowserSession {
+  const raw = record(value);
+  const expiresAt = date(raw.expires_at);
+  if (!text(raw.id) || !provider(raw.provider) || raw.status !== 'ready' || !expiresAt) {
+    throw invalidBrowserResponse();
+  }
+  return { id: text(raw.id), provider: raw.provider, status: 'ready', expiresAt };
+}
+type BrowserTransport = Pick<typeof apiClient, 'get' | 'post' | 'delete'>;
+export function createBillingBrowserApi(
+  transport: BrowserTransport = apiClient.createConnectionScope()
+) {
+  const path = (id: string) => `/billing/browser/sessions/${encodeURIComponent(id)}`;
+  return {
+    capability: async (): Promise<BillingBrowserCapability> => {
+      const raw = record(await transport.get('/billing/browser'));
+      return {
+        available: raw.available === true,
+        maxSessions: amount(raw.max_sessions) ?? 0,
+        ttlSeconds: amount(raw.ttl_seconds) ?? 0,
+      };
+    },
+    create: async (request: BillingBrowserRequest) =>
+      normalizeBrowserSession(
+        await transport.post('/billing/browser/sessions', {
+          provider: request.provider,
+          label: request.label,
+          ...(request.connectionId ? { connection_id: request.connectionId } : {}),
+        })
+      ),
+    status: async (id: string) => normalizeBrowserSession(await transport.get(path(id))),
+    remove: (id: string) => transport.delete(path(id)),
+    ticket: async (id: string): Promise<string> => {
+      const ticket = record(await transport.post(`${path(id)}/view-ticket`)).ticket;
+      if (typeof ticket !== 'string' || !/^[A-Za-z0-9_-]{1,512}$/.test(ticket))
+        throw invalidBrowserResponse();
+      return ticket;
+    },
+    finish: async (id: string): Promise<string> => {
+      const raw = record(await transport.post(`${path(id)}/finish`));
+      if (raw.status !== 'ok' || !text(raw.connection_id)) throw invalidBrowserResponse();
+      return text(raw.connection_id);
+    },
+  };
+}

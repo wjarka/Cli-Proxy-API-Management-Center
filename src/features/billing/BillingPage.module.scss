@@ -80,3 +80,27 @@
     grid-template-columns: 1fr;
   }
 }
+
+.browserPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.browserViewport {
+  width: 100%;
+  height: clamp(280px, 55vh, 560px);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+}
+.browserViewport:focus-within {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+@media (max-width: 600px) {
+  .browserViewport {
+    height: 340px;
+  }
+}
