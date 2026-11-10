@@ -2174,7 +2174,9 @@
         "baseUrlRequired": "服务地址必填",
         "weightInteger": "调度权重必须是整数",
         "weightMax": "调度权重不能超过 {{max}}"
-      }
+      },
+      "keyLabel": "密钥名称",
+      "keyLabelHint": "留空以使用默认名称。"
     },
     "delete": {
       "title": "删除资源",

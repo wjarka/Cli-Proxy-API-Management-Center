@@ -2176,7 +2176,9 @@
         "baseUrlRequired": "Base URL is required",
         "weightInteger": "Scheduling weight must be an integer",
         "weightMax": "Scheduling weight cannot exceed {{max}}"
-      }
+      },
+      "keyLabel": "Key name",
+      "keyLabelHint": "Leave empty to use the default name."
     },
     "delete": {
       "title": "Delete resource",

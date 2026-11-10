@@ -2055,7 +2055,9 @@
       "fingerprintProfile": "Dấu vân tay yêu cầu",
       "fingerprintProfileDefault": "Mặc định (do phía gọi kiểm soát)",
       "fingerprintProfileClaudeCodeCli": "Claude Code CLI",
-      "fingerprintProfileHint": "Mặc định giữ nguyên prompt và header của phía gọi, hoặc chọn sử dụng dấu vân tay yêu cầu của Claude Code CLI."
+      "fingerprintProfileHint": "Mặc định giữ nguyên prompt và header của phía gọi, hoặc chọn sử dụng dấu vân tay yêu cầu của Claude Code CLI.",
+      "keyLabel": "Tên khóa",
+      "keyLabelHint": "Để trống để dùng tên mặc định."
     },
     "delete": {
       "title": "Xóa tài nguyên",

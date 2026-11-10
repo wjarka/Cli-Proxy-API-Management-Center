@@ -2200,7 +2200,9 @@
         "baseUrlRequired": "服務位址必填",
         "weightInteger": "調度權重必須是整數",
         "weightMax": "調度權重不能超過 {{max}}"
-      }
+      },
+      "keyLabel": "金鑰名稱",
+      "keyLabelHint": "留空以使用預設名稱。"
     },
     "delete": {
       "title": "刪除資源",
