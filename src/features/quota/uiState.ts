@@ -1,6 +1,6 @@
 import {
   QUOTA_SORT_MODES,
-  QUOTA_TAB_ORDER,
+  QUOTA_VIEW_TAB_ORDER,
   type QuotaSortMode,
   type QuotaTabId,
 } from './constants';
@@ -13,7 +13,7 @@ export type QuotaUiState = {
 
 const QUOTA_UI_STATE_KEY = 'quotaPage.uiState';
 
-const QUOTA_TAB_ID_SET = new Set<string>(['all', ...QUOTA_TAB_ORDER]);
+const QUOTA_TAB_ID_SET = new Set<string>(['all', ...QUOTA_VIEW_TAB_ORDER]);
 const QUOTA_SORT_MODE_SET = new Set<string>(QUOTA_SORT_MODES);
 
 export const isQuotaTabId = (value: unknown): value is QuotaTabId =>

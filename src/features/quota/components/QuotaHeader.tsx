@@ -34,7 +34,7 @@ export function QuotaHeader(props: QuotaHeaderProps) {
         </h1>
         <p className={styles.meta} data-reveal>
           <span className={styles.metaTotal}>
-            {t('quota_management.meta_credentials', { count: totalCount })}
+            {t('quota_management.meta_accounts', { count: totalCount })}
           </span>
           <span className={styles.metaDot} aria-hidden="true">
             ·

@@ -11,13 +11,24 @@ export const QUOTA_TAB_ORDER: readonly QuotaProviderType[] = [
   'meta',
 ];
 
-export type QuotaTabId = 'all' | QuotaProviderType;
+export const QUOTA_VIEW_TAB_ORDER = [
+  'claude',
+  'antigravity',
+  'codex',
+  'openai',
+  'xai',
+  'kimi',
+  'devin',
+  'meta',
+] as const;
+
+export type QuotaTabId = 'all' | (typeof QUOTA_VIEW_TAB_ORDER)[number];
 
 /** 页级分页固定 20/页，同时把「刷新全部」的上游并发限制在 20。 */
 export const QUOTA_PAGE_SIZE = 20;
 
 /** 卡片排序：默认 = provider 分组序；soonest = 最快恢复优先。 */
-export const QUOTA_SORT_MODES = ['default', 'soonest'] as const;
+export const QUOTA_SORT_MODES = ['default', 'soonest', 'expiry'] as const;
 
 export type QuotaSortMode = (typeof QUOTA_SORT_MODES)[number];
 
