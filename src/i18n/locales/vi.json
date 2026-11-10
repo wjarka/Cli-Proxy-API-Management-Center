@@ -469,7 +469,8 @@
     "policy_rules_hint": "Các quy tắc tùy chỉnh được ưu tiên theo thứ tự danh sách. Kế thừa hoặc danh sách trống sẽ sử dụng quy tắc kế thừa; điều này không vô hiệu hóa chúng. Mẫu biểu thức chính quy (Regex) dùng cú pháp của Go.",
     "policy_retry_invalid": "Nhập một số nguyên an toàn không âm, hoặc chọn Kế thừa.",
     "policy_aliases_invalid": "Nhập tên model và bí danh không để trống cho mỗi hàng mới hoặc đã chỉnh sửa.",
-    "policy_rules_invalid": "Hoàn thành mỗi quy tắc đã chỉnh sửa với mã trạng thái dương, một hành động và ít nhất một điều kiện khớp không để trống."
+    "policy_rules_invalid": "Hoàn thành mỗi quy tắc đã chỉnh sửa với mã trạng thái dương, một hành động và ít nhất một điều kiện khớp không để trống.",
+    "filter_openai": "OpenAI API"
   },
   "antigravity_subscription": {
     "plan_unknown": "Không rõ",
@@ -1581,7 +1582,9 @@
     "search_placeholder": "Tìm theo tên file hoặc email",
     "search_empty_title": "Không có tài khoản phù hợp",
     "search_empty_desc": "Hãy thử tên file hoặc email khác, hoặc xóa tìm kiếm.",
-    "search_clear": "Xóa tìm kiếm"
+    "search_clear": "Xóa tìm kiếm",
+    "sort_expiry": "Tín dụng sắp hết hạn trước",
+    "meta_accounts": "{{count}} tài khoản"
   },
   "plugin_management": {
     "title": "Quản lý Plugin",
@@ -2385,5 +2388,19 @@
     "browser_alternative": "Cách khác: công cụ hỗ trợ hoặc nhập thủ công",
     "browser_tab": "Tab",
     "browser_enter": "Enter"
+  },
+  "console_quota": {
+    "badge": "API / Console",
+    "shared_pool": "Số dư dùng chung của tổ chức. Các khóa liên kết không cộng thêm tín dụng.",
+    "linked_credentials": "Thông tin xác thực API đã liên kết",
+    "no_credentials": "Chưa có thông tin xác thực API được liên kết",
+    "manage": "Quản lý trong Thanh toán",
+    "reconnect": "Kết nối lại trong Thanh toán",
+    "unverified_hint": "Liên kết chưa xác minh không xác nhận quyền truy cập số dư này.",
+    "refresh_failed": "Không thể làm mới số dư Console này.",
+    "load_failed": "Không thể tải số dư Console. Kiểm tra kết nối và hỗ trợ thanh toán của máy chủ.",
+    "empty_title": "Chưa có tổ chức OpenAI API",
+    "empty_desc": "Kết nối tài khoản OpenAI Console trong Thanh toán để xem số dư tổ chức và liên kết thông tin xác thực API.",
+    "organization": "Tổ chức"
   }
 }

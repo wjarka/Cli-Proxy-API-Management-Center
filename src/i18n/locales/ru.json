@@ -472,7 +472,8 @@
     "quota_refresh_single": "Обновить квоту",
     "quota_refresh_hint": "Обновить квоту только для этих учётных данных",
     "quota_refresh_success": "Квота для \"{{name}}\" обновлена",
-    "quota_refresh_failed": "Не удалось обновить квоту для \"{{name}}\": {{message}}"
+    "quota_refresh_failed": "Не удалось обновить квоту для \"{{name}}\": {{message}}",
+    "filter_openai": "OpenAI API"
   },
   "antigravity_subscription": {
     "plan_unknown": "Неизвестно",
@@ -1627,7 +1628,9 @@
     "weekday_wed": "Ср",
     "weekday_thu": "Чт",
     "weekday_fri": "Пт",
-    "weekday_sat": "Сб"
+    "weekday_sat": "Сб",
+    "sort_expiry": "Сначала истекающие кредиты",
+    "meta_accounts": "Аккаунтов: {{count}}"
   },
   "plugin_management": {
     "title": "Управление плагинами",
@@ -2373,5 +2376,19 @@
     "browser_alternative": "Другие способы: помощник или ручной импорт",
     "browser_tab": "Табуляция",
     "browser_enter": "Ввод"
+  },
+  "console_quota": {
+    "badge": "API / Console",
+    "shared_pool": "Общий баланс организации. Привязанные ключи не добавляют кредитов.",
+    "linked_credentials": "Привязанные учётные данные API",
+    "no_credentials": "Нет привязанных учётных данных API",
+    "manage": "Управление в разделе счетов",
+    "reconnect": "Переподключить в разделе счетов",
+    "unverified_hint": "Непроверенная привязка не подтверждает доступ к этому балансу.",
+    "refresh_failed": "Не удалось обновить этот баланс Console.",
+    "load_failed": "Не удалось загрузить балансы Console. Проверьте подключение и поддержку счетов сервером.",
+    "empty_title": "Нет организаций OpenAI API",
+    "empty_desc": "Подключите вход OpenAI Console в разделе счетов, чтобы видеть балансы организаций и привязывать учётные данные API.",
+    "organization": "Организация"
   }
 }

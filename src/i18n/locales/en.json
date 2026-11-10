@@ -469,7 +469,8 @@
     "quota_refresh_single": "Refresh quota",
     "quota_refresh_hint": "Refresh quota only for this credential",
     "quota_refresh_success": "Quota refreshed for \"{{name}}\"",
-    "quota_refresh_failed": "Failed to refresh quota for \"{{name}}\": {{message}}"
+    "quota_refresh_failed": "Failed to refresh quota for \"{{name}}\": {{message}}",
+    "filter_openai": "OpenAI API"
   },
   "antigravity_subscription": {
     "plan_unknown": "Unknown",
@@ -1624,7 +1625,9 @@
     "weekday_wed": "Wed",
     "weekday_thu": "Thu",
     "weekday_fri": "Fri",
-    "weekday_sat": "Sat"
+    "weekday_sat": "Sat",
+    "sort_expiry": "Credit expiry first",
+    "meta_accounts": "{{count}} accounts"
   },
   "plugin_management": {
     "title": "Plugin Management",
@@ -2379,5 +2382,19 @@
     "browser_alternative": "Other ways to connect: helper or manual import",
     "browser_tab": "Tab",
     "browser_enter": "Enter"
+  },
+  "console_quota": {
+    "badge": "API / Console",
+    "shared_pool": "Shared organization balance. Linked keys do not add credit.",
+    "linked_credentials": "Linked API credentials",
+    "no_credentials": "No linked API credentials",
+    "manage": "Manage in Billing",
+    "reconnect": "Reconnect in Billing",
+    "unverified_hint": "Unverified links do not confirm access to this balance.",
+    "refresh_failed": "Could not refresh this Console balance.",
+    "load_failed": "Could not load Console balances. Check the connection and backend billing support.",
+    "empty_title": "No OpenAI API organizations",
+    "empty_desc": "Connect an OpenAI Console login in Billing to view organization balances and link API credentials.",
+    "organization": "Organization"
   }
 }

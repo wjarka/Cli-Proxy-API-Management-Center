@@ -467,7 +467,8 @@
     "quota_refresh_single": "刷新额度",
     "quota_refresh_hint": "仅刷新该认证文件的额度",
     "quota_refresh_success": "已刷新 \"{{name}}\" 的额度",
-    "quota_refresh_failed": "刷新 \"{{name}}\" 的额度失败：{{message}}"
+    "quota_refresh_failed": "刷新 \"{{name}}\" 的额度失败：{{message}}",
+    "filter_openai": "OpenAI API"
   },
   "antigravity_subscription": {
     "plan_unknown": "未知",
@@ -1622,7 +1623,9 @@
     "weekday_wed": "三",
     "weekday_thu": "四",
     "weekday_fri": "五",
-    "weekday_sat": "六"
+    "weekday_sat": "六",
+    "sort_expiry": "按额度到期时间优先",
+    "meta_accounts": "{{count}} 个账户"
   },
   "plugin_management": {
     "title": "插件管理",
@@ -2377,5 +2380,19 @@
     "browser_alternative": "其他连接方式：辅助工具或手动导入",
     "browser_tab": "制表键",
     "browser_enter": "回车键"
+  },
+  "console_quota": {
+    "badge": "API / Console",
+    "shared_pool": "组织共享余额。关联的密钥不会增加额度。",
+    "linked_credentials": "关联的 API 凭证",
+    "no_credentials": "尚未关联 API 凭证",
+    "manage": "在账单中管理",
+    "reconnect": "在账单中重新连接",
+    "unverified_hint": "未经验证的关联无法确认是否有权使用此余额。",
+    "refresh_failed": "无法刷新此 Console 余额。",
+    "load_failed": "无法加载 Console 余额。请检查连接和后端账单支持。",
+    "empty_title": "暂无 OpenAI API 组织",
+    "empty_desc": "在账单页面连接 OpenAI Console 登录，以查看组织余额并关联 API 凭证。",
+    "organization": "组织"
   }
 }

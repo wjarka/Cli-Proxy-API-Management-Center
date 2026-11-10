@@ -467,7 +467,8 @@
     "quota_refresh_single": "重新整理配額",
     "quota_refresh_hint": "僅重新整理該驗證檔案的配額",
     "quota_refresh_success": "已重新整理「{{name}}」的配額",
-    "quota_refresh_failed": "重新整理「{{name}}」的配額失敗：{{message}}"
+    "quota_refresh_failed": "重新整理「{{name}}」的配額失敗：{{message}}",
+    "filter_openai": "OpenAI API"
   },
   "antigravity_subscription": {
     "plan_unknown": "未知",
@@ -1648,7 +1649,9 @@
     "weekday_wed": "三",
     "weekday_thu": "四",
     "weekday_fri": "五",
-    "weekday_sat": "六"
+    "weekday_sat": "六",
+    "sort_expiry": "依額度到期時間優先",
+    "meta_accounts": "{{count}} 個帳戶"
   },
   "plugin_management": {
     "title": "插件管理",
@@ -2403,5 +2406,19 @@
     "browser_alternative": "其他連線方式：輔助工具或手動匯入",
     "browser_tab": "定位鍵",
     "browser_enter": "輸入鍵"
+  },
+  "console_quota": {
+    "badge": "API / Console",
+    "shared_pool": "組織共用餘額。關聯的金鑰不會增加額度。",
+    "linked_credentials": "關聯的 API 憑證",
+    "no_credentials": "尚未關聯 API 憑證",
+    "manage": "在帳單中管理",
+    "reconnect": "在帳單中重新連線",
+    "unverified_hint": "未經驗證的關聯無法確認是否有權使用此餘額。",
+    "refresh_failed": "無法重新整理此 Console 餘額。",
+    "load_failed": "無法載入 Console 餘額。請檢查連線和後端帳單支援。",
+    "empty_title": "尚無 OpenAI API 組織",
+    "empty_desc": "在帳單頁面連線 OpenAI Console 登入，以查看組織餘額並關聯 API 憑證。",
+    "organization": "組織"
   }
 }
