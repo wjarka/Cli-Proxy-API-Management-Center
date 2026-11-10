@@ -647,6 +647,12 @@ export function MainLayout() {
           icon: sidebarIcons.quota,
         },
         {
+          path: '/billing',
+          labelKey: 'nav.billing',
+          metaKey: 'nav_meta.billing',
+          icon: sidebarIcons.quota,
+        },
+        {
           path: '/logs',
           labelKey: 'nav.logs',
           metaKey: 'nav_meta.logs',
