@@ -86,7 +86,9 @@ function providerKeyToResource(
     id: buildId(brand, index, truncateForId(apiKey)),
     brand,
     originalIndex: index,
-    name: typeof config.source?.group.name === 'string' ? config.source.group.name : null,
+    name:
+      config.label?.trim() ||
+      (typeof config.source?.group.name === 'string' ? config.source.group.name : null),
     identifier: maskApiKey(apiKey) || `#${index + 1}`,
     apiKeyPreview: apiKey ? maskApiKey(apiKey) : null,
     apiKey: apiKey || null,

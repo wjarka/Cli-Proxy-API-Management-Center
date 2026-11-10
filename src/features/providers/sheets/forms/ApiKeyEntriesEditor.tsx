@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   IconChevronDown,
@@ -49,6 +49,7 @@ export function ApiKeyEntriesEditor({
   onTestAll,
 }: ApiKeyEntriesEditorProps) {
   const { t } = useTranslation();
+  const fid = useId();
   const [expandedIdx, setExpandedIdx] = useState<number | null>(() =>
     entries.length === 1 && isBlankEntry(entries[0]) ? 0 : null
   );
@@ -130,7 +131,9 @@ export function ApiKeyEntriesEditor({
                 aria-expanded={expanded}
                 onClick={() => setExpandedIdx(expanded ? null : idx)}
               >
-                <span>{t('providersPage.form.apiKeyEntry', { index: idx + 1 })}</span>
+                <span>
+                  {entry.label?.trim() || t('providersPage.form.apiKeyEntry', { index: idx + 1 })}
+                </span>
                 <span className={styles.entrySummary}>
                   {entry.proxyUrl.trim() ? (
                     <span className={styles.entryBadge} title={entry.proxyUrl}>
@@ -189,6 +192,23 @@ export function ApiKeyEntriesEditor({
             ) : null}
             {expanded ? (
               <div className={styles.entryCardBody}>
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor={`${fid}-keyLabel-${idx}`}>
+                    {t('providersPage.form.keyLabel')}
+                  </label>
+                  <input
+                    id={`${fid}-keyLabel-${idx}`}
+                    className={styles.input}
+                    value={entry.label ?? ''}
+                    onChange={(event) => onUpdate(idx, { label: event.target.value })}
+                    autoComplete="off"
+                    aria-describedby={`${fid}-keyLabel-${idx}-hint`}
+                    disabled={mutating}
+                  />
+                  <span id={`${fid}-keyLabel-${idx}-hint`} className={styles.labelHint}>
+                    {t('providersPage.form.keyLabelHint')}
+                  </span>
+                </div>
                 <div className={styles.field}>
                   <label className={styles.label}>{t('providersPage.form.apiKey')}</label>
                   <div className={styles.passwordField}>

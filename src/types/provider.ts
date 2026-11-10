@@ -55,6 +55,7 @@ export interface ModelAlias {
 export interface ApiKeyEntry {
   sourceIndex?: number;
   apiKey: string;
+  label?: string;
   proxyUrl?: string;
   weight?: number;
   authIndex?: string;
@@ -70,6 +71,7 @@ export interface CloakConfig {
 export interface GeminiKeyConfig extends ProviderRuntimePolicy {
   source?: ProviderSource;
   apiKey: string;
+  label?: string;
   priority?: number;
   weight?: number;
   prefix?: string;
@@ -85,6 +87,7 @@ export interface GeminiKeyConfig extends ProviderRuntimePolicy {
 export interface ProviderKeyConfig extends ProviderRuntimePolicy, ProviderBehaviorOptions {
   source?: ProviderSource;
   apiKey: string;
+  label?: string;
   priority?: number;
   weight?: number;
   prefix?: string;

@@ -60,6 +60,7 @@ const emptyHeader = () => ({ key: '', value: '' });
 const emptyModel = (): ModelEntryInput => ({ name: '', alias: '' });
 const emptyApiKeyEntry = (): ApiKeyEntryInput => ({
   apiKey: '',
+  label: '',
   proxyUrl: '',
   weight: undefined,
 });
@@ -84,6 +85,7 @@ function buildInitialForm(
   if (mode === 'create' || !resource) {
     return {
       apiKey: '',
+      label: '',
       name: '',
       baseUrl: brand === 'meta' ? META_API_BASE_URL : brand === 'xai' ? XAI_API_BASE_URL : '',
       proxyUrl: '',
@@ -149,6 +151,7 @@ function buildInitialForm(
         ? cfg.apiKeyEntries.map((entry) => ({
             apiKey: '',
             existingApiKey: entry.apiKey,
+            label: entry.label ?? '',
             sourceIndex: entry.sourceIndex,
             proxyUrl: entry.proxyUrl ?? '',
             weight: entry.weight,
@@ -167,6 +170,7 @@ function buildInitialForm(
     // overwrite it) and defeats the "leave empty = keep unchanged" contract; an
     // empty field is preserved on save via buildProviderKeyConfig's existing fallback.
     apiKey: '',
+    label: cfg.label ?? '',
     name: '',
     baseUrl: cfg.baseUrl ?? '',
     proxyUrl: cfg.proxyUrl ?? '',
@@ -512,6 +516,26 @@ export function BaseProviderForm({
               onChange={(e) => updateField('name', e.target.value)}
               disabled={mutating}
             />
+          </div>
+        ) : null}
+
+        {descriptor.supportsApiKey ? (
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor={`${fid}-keyLabel`}>
+              {t('providersPage.form.keyLabel')}
+            </label>
+            <input
+              id={`${fid}-keyLabel`}
+              className={styles.input}
+              value={form.label ?? ''}
+              onChange={(event) => updateField('label', event.target.value)}
+              autoComplete="off"
+              aria-describedby={`${fid}-keyLabel-hint`}
+              disabled={mutating}
+            />
+            <span id={`${fid}-keyLabel-hint`} className={styles.labelHint}>
+              {t('providersPage.form.keyLabelHint')}
+            </span>
           </div>
         ) : null}
 

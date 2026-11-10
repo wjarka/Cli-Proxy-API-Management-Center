@@ -165,6 +165,7 @@ export interface SponsorKeyEntryInput extends ProviderBehaviorOptions {
 }
 
 export interface ApiKeyEntryInput {
+  label?: string;
   sourceIndex?: number;
   apiKey: string;
   existingApiKey?: string;
@@ -181,6 +182,8 @@ export interface CloakInput {
 }
 
 export interface ProviderEntryFormInput extends ProviderBehaviorOptions {
+  /** Optional per-key display name; never part of credential identity. */
+  label?: string;
   /** OpenAI 创建时只在 apiKeyEntries 中传 */
   apiKey: string;
   /** OpenAI 必填,其余 brand 不展示 */

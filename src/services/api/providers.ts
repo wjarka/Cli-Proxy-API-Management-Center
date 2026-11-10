@@ -40,6 +40,7 @@ const serializeModelAliases = (models?: ModelAlias[], includeOpenAIFields = fals
 
 const serializeApiKeyEntry = (entry: ApiKeyEntry) => {
   const payload: Record<string, unknown> = { 'api-key': entry.apiKey };
+  if (entry.label?.trim()) payload.label = entry.label.trim();
   if (entry.proxyUrl) payload['proxy-url'] = entry.proxyUrl;
   if (entry.weight !== undefined) payload.weight = entry.weight;
   return payload;
@@ -83,6 +84,7 @@ const serializeProviderKey = (config: ProviderKeyConfig, family: ProviderFamily)
     'api-key': config.apiKey,
     ...serializeRuntimePolicy(config),
   };
+  if (config.label?.trim()) payload.label = config.label.trim();
   if (config.priority !== undefined) payload.priority = config.priority;
   if (config.weight !== undefined) payload.weight = config.weight;
   if (config.prefix?.trim()) payload.prefix = config.prefix.trim();
@@ -148,6 +150,7 @@ const serializeVertexKey = (config: ProviderKeyConfig) => {
     'api-key': config.apiKey,
     ...serializeRuntimePolicy(config, false),
   };
+  if (config.label?.trim()) payload.label = config.label.trim();
   if (config.disableCooling !== undefined) payload['disable-cooling'] = config.disableCooling;
   if (config.priority !== undefined) payload.priority = config.priority;
   if (config.weight !== undefined) payload.weight = config.weight;
@@ -169,6 +172,7 @@ const serializeGeminiKey = (config: GeminiKeyConfig) => {
     'api-key': config.apiKey,
     ...serializeRuntimePolicy(config),
   };
+  if (config.label?.trim()) payload.label = config.label.trim();
   if (config.priority !== undefined) payload.priority = config.priority;
   if (config.weight !== undefined) payload.weight = config.weight;
   if (config.prefix?.trim()) payload.prefix = config.prefix.trim();

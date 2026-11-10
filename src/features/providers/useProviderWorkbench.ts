@@ -157,6 +157,7 @@ const buildProviderKeyConfig = (
   const apiKeyChanged = input.apiKey.trim().length > 0;
   const next: ProviderKeyConfig = {
     source: existing?.source,
+    label: input.label === undefined ? existing?.label : input.label.trim() || undefined,
     apiKey: apiKeyChanged ? input.apiKey.trim() : (existing?.apiKey ?? ''),
     priority: input.priority,
     weight: input.weight,
@@ -207,6 +208,7 @@ const buildOpenAIConfig = (
         return {
           apiKey: entry.apiKey.trim() || fallbackApiKey,
           sourceIndex: entry.sourceIndex,
+          label: entry.label?.trim() || undefined,
           proxyUrl: entry.proxyUrl.trim() || undefined,
           weight: entry.weight,
           authIndex: entry.authIndex?.trim() || undefined,

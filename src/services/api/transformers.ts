@@ -112,6 +112,7 @@ const normalizeApiKeyEntry = (entry: unknown): ApiKeyEntry | null => {
     apiKey: trimmed,
     proxyUrl: proxyUrl ? String(proxyUrl) : undefined,
   };
+  if (typeof record?.label === 'string' && record.label.trim()) result.label = record.label.trim();
   if (weight !== undefined) result.weight = weight;
   if (authIndex) result.authIndex = authIndex;
   return result;
@@ -155,6 +156,7 @@ const normalizeProviderKeyConfig = (item: unknown): ProviderKeyConfig | null => 
     const value = normalizeBoolean(record?.[wire]);
     if (value !== undefined) config[key] = value;
   }
+  if (typeof record?.label === 'string' && record.label.trim()) config.label = record.label.trim();
   const weight = readCredentialWeight(record?.weight);
   if (weight !== undefined) config.weight = weight;
   const priority = record?.priority;
@@ -225,6 +227,7 @@ const normalizeGeminiKeyConfig = (item: unknown): GeminiKeyConfig | null => {
   if (!trimmed) return null;
 
   const config: GeminiKeyConfig = { apiKey: trimmed, ...normalizeRuntimePolicy(record) };
+  if (typeof record?.label === 'string' && record.label.trim()) config.label = record.label.trim();
   const weight = readCredentialWeight(record?.weight);
   if (weight !== undefined) config.weight = weight;
   const priority = record?.priority;
@@ -327,6 +330,7 @@ export const normalizeProviderGroups = (groups: unknown, openai = false) => {
       const effective = { ...group };
       delete effective.keys;
       delete effective.name;
+      delete effective.label;
       Object.entries(key).forEach(([field, value]) => {
         if (value !== null) effective[field] = value;
       });
