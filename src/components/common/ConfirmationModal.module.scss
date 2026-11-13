@@ -1,0 +1,38 @@
+.choices {
+  display: grid;
+  gap: $spacing-xs;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  legend {
+    margin-bottom: $spacing-xs;
+    font-weight: 600;
+  }
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  padding: $spacing-sm;
+  border: 1px solid var(--border-color);
+  border-radius: $radius-sm;
+  overflow-wrap: anywhere;
+
+  &:has(input:checked) {
+    background: var(--bg-secondary);
+  }
+
+  input {
+    margin: 0.25em 0 0;
+  }
+}
+
+.detail {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}

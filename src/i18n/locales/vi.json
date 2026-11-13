@@ -2253,7 +2253,13 @@
     "unknown": "Không rõ",
     "remaining": "Còn lại {{percent}}%"
   },
+  "quota_reset": {
+    "choose": "Chọn lượt đặt lại",
+    "no_choices": "Không có lượt đặt lại riêng lẻ nào cho {{name}}. Hãy làm mới hạn mức để kiểm tra lại.",
+    "fable_weekly": "Giới hạn Fable hằng tuần"
+  },
   "claude_reset": {
+    "cooldown_failed": "Đã dùng lượt đặt lại, nhưng CLIProxy không thể xóa thời gian chờ. Hãy chọn Xóa thời gian chờ trên trang thông tin xác thực.",
     "expiry_title": "Hết hạn đặt lại thủ công ({{timezone}})",
     "grant_number": "Gói {{index}}",
     "expiry_unknown": "Chưa rõ thời gian hết hạn",

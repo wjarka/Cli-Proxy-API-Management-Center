@@ -1,3 +1,6 @@
+import { guardConfigConnection } from '@/services/api/configValue';
+import type { CodexQuotaState } from '@/types';
+import { getCodexResetChoice } from '../providers/codex/resetCreditChoice';
 /**
  * 单卡额度操作：刷新 + Codex 重置积分。
  * 流程 1:1 移植旧 QuotaSection（confirm modal、resetting 再入守卫、
@@ -80,17 +83,33 @@ export function useQuotaActions(disableControls: boolean) {
       if (getQuotaState(adapter, file)?.status === 'loading') return;
       if (resettingQuotaName === cacheKey) return;
 
+      const choice = getCodexResetChoice(
+        getQuotaState(adapter, file) as CodexQuotaState | undefined,
+        t
+      );
+      const assertConnection = guardConfigConnection();
+      const cacheGeneration = captureQuotaCacheGeneration(file.name);
+
       showConfirmation({
+        choice,
         title: t('codex_quota.reset_confirm_title'),
-        message: t('codex_quota.reset_confirm_message', { name: file.name }),
+        message: t(
+          choice.options.length ? 'codex_quota.reset_confirm_message' : 'quota_reset.no_choices',
+          { name: file.name }
+        ),
         confirmText: t('codex_quota.reset_confirm_button'),
         variant: 'primary',
-        onConfirm: async () => {
-          const cacheGeneration = captureQuotaCacheGeneration(file.name);
+        onConfirm: async (creditId) => {
+          try {
+            assertConnection();
+          } catch {
+            return;
+          }
+          if (!commitIfQuotaCacheCurrent(cacheGeneration, () => {})) return;
           const setQuota = getQuotaSetter(adapter);
           setResettingQuotaName(cacheKey);
           try {
-            const data = await resetQuotaFn(file, t);
+            const data = await resetQuotaFn(file, t, creditId);
             commitIfQuotaCacheCurrent(cacheGeneration, () => {
               setQuota((prev) => ({
                 ...prev,

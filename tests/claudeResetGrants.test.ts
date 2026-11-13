@@ -1,4 +1,4 @@
-import { selectResetGrant } from '../src/features/quota/providers/claude/selectResetGrant';
+import { listSelectableResetGrants } from '../src/features/quota/providers/claude/selectResetGrant';
 
 import { afterEach, describe, expect, test } from 'bun:test';
 import {
@@ -155,6 +155,11 @@ function setup() {
     requestId: () => `request-${++count}`,
     readStatus: async () => status(),
     readOrganization: async () => organization,
+    clearCooldown: async (authIndex: string) => ({
+      status: 'ok',
+      auth_index: authIndex,
+      models: [],
+    }),
     claim: async (
       _auth: string,
       _org: string,
@@ -322,19 +327,21 @@ test('all grant messages and confirmation are translated in four locales', async
   }
 });
 
-test('card selection prefers usable recommendation and has deterministic fallback', () => {
+test('offers every eligible grant regardless of Anthropic recommendation', () => {
   const base = status();
-  const a = { ...base.grants[0], id: 'a' };
-  const b = { ...a, id: 'b' };
-  const multiple = { ...base, grants: [b, a], nextGrantId: 'b' };
-  expect(selectResetGrant(multiple, 0)?.id).toBe('b');
-  expect(selectResetGrant({ ...multiple, nextGrantId: null }, 0)?.id).toBe('a');
-  expect(selectResetGrant({ ...multiple, grants: [a, { ...b, paused: true }] }, 0)?.id).toBe('a');
-  expect(selectResetGrant({ ...multiple, eligible: false }, 0)).toBeUndefined();
-  expect(selectResetGrant({ ...multiple, atLimit: false }, 0)).toBeUndefined();
+  const full = { ...base.grants[0], id: 'full', label: 'Full reset' };
+  const fable = { ...full, id: 'fable', label: 'Fable reset' };
+  const multiple = { ...base, grants: [full, fable], nextGrantId: 'full' };
+  expect(listSelectableResetGrants(multiple, 0)).toEqual([full, fable]);
+  expect(listSelectableResetGrants({ ...multiple, nextGrantId: 'fable' }, 0)).toEqual([
+    full,
+    fable,
+  ]);
+  expect(listSelectableResetGrants({ ...multiple, eligible: false }, 0)).toEqual([]);
+  expect(listSelectableResetGrants({ ...multiple, atLimit: false }, 0)).toEqual([]);
   expect(
-    selectResetGrant({ ...multiple, cooldownUntil: new Date(1000).toISOString() }, 0)
-  ).toBeUndefined();
+    listSelectableResetGrants({ ...multiple, cooldownUntil: new Date(1000).toISOString() }, 0)
+  ).toEqual([]);
   for (const changed of [
     { resetsLeft: 0 },
     { usableNow: false },
@@ -342,8 +349,27 @@ test('card selection prefers usable recommendation and has deterministic fallbac
     { startsAt: new Date(1000).toISOString() },
     { endsAt: new Date(0).toISOString() },
   ]) {
-    expect(selectResetGrant({ ...base, grants: [{ ...a, ...changed }] }, 0)).toBeUndefined();
+    expect(
+      listSelectableResetGrants({ ...multiple, grants: [full, { ...fable, ...changed }] }, 0)
+    ).toEqual([full]);
   }
+});
+
+test('submits the selected Fable grant and refuses to substitute a remaining full grant', async () => {
+  const h = setup();
+  const full = { ...status().grants[0], id: 'full' };
+  const fable = { ...full, id: 'fable' };
+  h.deps.readStatus = async () => ({ ...status(), grants: [full, fable], nextGrantId: 'full' });
+  const claimed: string[] = [];
+  h.deps.claim = async (_auth, _org, id) => {
+    claimed.push(id);
+    return 'reset';
+  };
+  const operations = createResetGrantOperations(h.deps);
+  await operations.run('account', 'a', 'fable');
+  h.deps.readStatus = async () => ({ ...status(), grants: [full], nextGrantId: 'full' });
+  await expect(operations.run('account', 'a', 'fable')).rejects.toThrow('blocked');
+  expect(claimed).toEqual(['fable']);
 });
 
 test('Claude card uses Codex count and action styles and shared confirmation, not a grant dialog', async () => {
@@ -356,4 +382,37 @@ test('Claude card uses Codex count and action styles and shared confirmation, no
   expect(hook).toContain("pending ? 'claude_reset.retry_confirm'");
   expect(hook).not.toContain('<Modal');
   expect(hook).not.toContain('status.grants.map');
+});
+
+test.each(['reset', 'ineligible', 'already_used'] as const)(
+  'clears the selected Claude credential only on a confirmed new reset (%s)',
+  async (code) => {
+    const h = setup();
+    const calls: string[] = [];
+    h.deps.claim = async () => {
+      calls.push('claim');
+      return code;
+    };
+    h.deps.clearCooldown = async (authIndex) => {
+      calls.push(authIndex);
+      return { status: 'ok', auth_index: authIndex, models: [] };
+    };
+    await createResetGrantOperations(h.deps).run('account', 'chosen-index', grant.id);
+    expect(calls).toEqual(code === 'reset' ? ['claim', 'chosen-index'] : ['claim']);
+  }
+);
+
+test('keeps a spent Claude reset settled if the cooldown clear fails', async () => {
+  const h = setup();
+  h.deps.claim = async () => 'reset';
+  h.deps.clearCooldown = async () => {
+    throw new Error('offline');
+  };
+  const operations = createResetGrantOperations(h.deps);
+  expect(await operations.run('account', 'a', grant.id)).toEqual({
+    code: 'reset',
+    unresolved: false,
+    cooldownFailed: true,
+  });
+  expect(operations.inspect('account')?.code).toBe('reset');
 });

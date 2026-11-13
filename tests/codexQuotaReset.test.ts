@@ -2,7 +2,10 @@ import { afterEach, describe, expect, spyOn, test } from 'bun:test';
 import type { TFunction } from 'i18next';
 import { CODEX_CONFIG } from '@/features/quota/providers/codex/data';
 import { apiCallApi, authFilesApi, apiClient } from '@/services/api';
-import { CODEX_RATE_LIMIT_RESET_CREDITS_CONSUME_URL } from '@/utils/quota';
+import {
+  CODEX_RATE_LIMIT_RESET_CREDITS_CONSUME_URL,
+  CODEX_RATE_LIMIT_RESET_CREDITS_URL,
+} from '@/utils/quota';
 
 const t = ((key: string) => key) as TFunction;
 const file = { name: 'codex-test.json', auth_index: 'test-index', type: 'codex' };
@@ -12,18 +15,28 @@ const response = (body: unknown, statusCode = 200) => ({
   bodyText: JSON.stringify(body),
   header: {},
 });
-const reset = () => CODEX_CONFIG.resetQuota!(file, t);
+const selected = 'credit-two';
+const reset = () => CODEX_CONFIG.resetQuota!(file, t, selected);
+const credit = (id: string) => ({ id, status: 'available', reset_type: 'codex_rate_limits' });
 const mocks: Array<{ mockRestore(): void }> = [];
 afterEach(() => {
   for (const mock of mocks.splice(0)) mock.mockRestore();
 });
 
-function setup(body: unknown, statusCode = 200) {
+function setup(
+  body: unknown,
+  statusCode = 200,
+  credits = [credit('credit-one'), credit(selected)]
+) {
   const calls: string[] = [];
   const request = spyOn(apiCallApi, 'request').mockImplementation(async (payload) => {
     if (payload.url === CODEX_RATE_LIMIT_RESET_CREDITS_CONSUME_URL) {
       calls.push('consume');
       return response(body, statusCode);
+    }
+    if (payload.url === CODEX_RATE_LIMIT_RESET_CREDITS_URL && calls.length === 0) {
+      calls.push('verify');
+      return response({ credits });
     }
     calls.push('read');
     return response({});
@@ -42,7 +55,7 @@ describe('Codex reset gateway cooldown', () => {
     async (code) => {
       const { calls, clear } = setup({ code, windows_reset: 0 });
       await reset();
-      expect(calls.slice(0, 3)).toEqual(['consume', 'clear', 'read']);
+      expect(calls.slice(0, 4)).toEqual(['verify', 'consume', 'clear', 'read']);
       expect(clear).toHaveBeenCalledTimes(1);
       expect(clear).toHaveBeenCalledWith('test-index');
     }
@@ -51,17 +64,18 @@ describe('Codex reset gateway cooldown', () => {
   test.each(['no_credit', 'nothing_to_reset', 'unknown'])('does not clear for %s', async (code) => {
     const { calls } = setup({ code });
     await expect(reset()).rejects.toThrow('codex_quota.reset_not_confirmed');
-    expect(calls).toEqual(['consume']);
+    expect(calls).toEqual(['verify', 'consume']);
   });
 
   test('does not clear on HTTP failure', async () => {
     const { calls } = setup({ code: 'reset' }, 503);
     await expect(reset()).rejects.toThrow();
-    expect(calls).toEqual(['consume']);
+    expect(calls).toEqual(['verify', 'consume']);
   });
 
   test('does not clear on transport failure', async () => {
     const { request, clear } = setup({});
+    request.mockResolvedValueOnce(response({ credits: [credit(selected)] }));
     request.mockRejectedValue(new Error('timeout'));
     await expect(reset()).rejects.toThrow('timeout');
     expect(clear).not.toHaveBeenCalled();
@@ -71,7 +85,7 @@ describe('Codex reset gateway cooldown', () => {
     const { request, clear } = setup({ code: 'reset' });
     clear.mockRejectedValue(new Error('offline'));
     await expect(reset()).rejects.toThrow('codex_quota.reset_cooldown_failed');
-    expect(request).toHaveBeenCalledTimes(1);
+    expect(request).toHaveBeenCalledTimes(2);
   });
 
   test('rejects mismatched cooldown acknowledgements', async () => {
@@ -84,9 +98,37 @@ describe('Codex reset gateway cooldown', () => {
     const { clear } = setup({ code: 'reset' });
     const revision = spyOn(apiClient, 'getConnectionRevision')
       .mockReturnValueOnce(1)
+      .mockReturnValueOnce(1)
       .mockReturnValue(2);
     mocks.push(revision);
     await expect(reset()).rejects.toThrow('codex_quota.reset_cooldown_failed');
     expect(clear).not.toHaveBeenCalled();
   });
+});
+
+test('sends exactly the chosen credit ID even when it is not first', async () => {
+  const { request } = setup({ code: 'reset' });
+  await reset();
+  const payload = request.mock.calls.find(
+    ([call]) => call.url === CODEX_RATE_LIMIT_RESET_CREDITS_CONSUME_URL
+  )?.[0];
+  expect(JSON.parse(payload?.data ?? '{}')).toEqual({
+    redeem_request_id: expect.any(String),
+    credit_id: selected,
+  });
+});
+
+test('never redeems an alternative if the selected credit disappeared', async () => {
+  const { calls, clear } = setup({ code: 'reset' }, 200, [credit('credit-one')]);
+  await expect(reset()).rejects.toThrow('quota_reset.choice_unavailable');
+  expect(calls).toEqual(['verify']);
+  expect(clear).not.toHaveBeenCalled();
+});
+
+test('requires an explicit credit before doing any request', async () => {
+  const { request } = setup({ code: 'reset' });
+  await expect(CODEX_CONFIG.resetQuota!(file, t, '')).rejects.toThrow(
+    'quota_reset.choice_unavailable'
+  );
+  expect(request).not.toHaveBeenCalled();
 });

@@ -2245,7 +2245,13 @@
       "notLoaded": "未加载"
     }
   },
+  "quota_reset": {
+    "choose": "选择一次重置",
+    "no_choices": "{{name}} 暂无可单独选择的重置。请刷新配额后重试。",
+    "fable_weekly": "Fable 每周限额"
+  },
   "claude_reset": {
+    "cooldown_failed": "重置已使用，但 CLIProxy 未能清除冷却。请在凭证页面选择清除冷却。",
     "expiry_title": "主动重置过期时间（{{timezone}}）",
     "grant_number": "第 {{index}} 批",
     "expiry_unknown": "到期时间未知",

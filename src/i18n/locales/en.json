@@ -2247,7 +2247,13 @@
       "notLoaded": "Not loaded"
     }
   },
+  "quota_reset": {
+    "choose": "Choose a reset",
+    "no_choices": "No individual resets are available for {{name}}. Refresh the quota to check again.",
+    "fable_weekly": "Weekly Fable limit"
+  },
   "claude_reset": {
+    "cooldown_failed": "Reset spent, but CLIProxy could not clear the cooldown. Use Clear cooldown on the credential page.",
     "expiry_title": "Manual reset expiry ({{timezone}})",
     "grant_number": "Grant {{index}}",
     "expiry_unknown": "Expiry unknown",

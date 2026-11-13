@@ -12,7 +12,6 @@ import {
   PREMIUM_CODEX_PLAN_TYPES,
   buildResetDisplay,
   formatInstantShort,
-  parseIsoToMs,
   resolveResetMs,
 } from '@/utils/quota';
 import { resolveTimeZoneLabel } from '@/utils/time/timezone';
@@ -138,7 +137,7 @@ export function CodexQuotaBody({
             {t('codex_quota.reset_credits_expiry_label', { timezone: resolveTimeZoneLabel() })}
           </div>
           {rateLimitResetCredits.map((credit, index) => {
-            const expiresAtMs = parseIsoToMs(credit.expiresAt);
+            const expiresAtMs = resolveResetMs([credit.expiresAt]);
             const expiresDisplay = buildResetDisplay(
               expiresAtMs === null ? credit.expiresAt : formatInstantShort(expiresAtMs),
               expiresAtMs,
@@ -160,7 +159,7 @@ export function CodexQuotaBody({
                 title={soon ? t('quota_management.soonest_row_hint') : undefined}
               >
                 <span className={classes.codexResetCreditLabel}>
-                  {t('codex_quota.reset_credit_number', { index: index + 1 })}
+                  {credit.title || t('codex_quota.reset_credit_number', { index: index + 1 })}
                 </span>
                 <span className={classes.codexResetCreditTime}>
                   {expiresDisplay && (

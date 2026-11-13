@@ -27,6 +27,7 @@ import {
   normalizePlanType,
   normalizeStringValue,
   normalizeCodexResetCreditsPayload,
+  listSelectableCodexCredits,
   parseCodexUsagePayload,
   parseOffsetSecondsToMs,
   periodHoursFromSeconds,
@@ -491,8 +492,11 @@ const createCodexRedeemRequestId = (): string => {
 
 const consumeCodexRateLimitResetCredit = async (
   file: AuthFileItem,
-  t: TFunction
+  t: TFunction,
+  creditId: string,
+  assertConnection: () => void
 ): Promise<string> => {
+  if (!creditId?.trim()) throw new Error(t('quota_reset.choice_unavailable'));
   const rawAuthIndex = file['auth_index'] ?? file.authIndex;
   const authIndex = normalizeAuthIndex(rawAuthIndex);
   if (!authIndex) {
@@ -500,6 +504,11 @@ const consumeCodexRateLimitResetCredit = async (
   }
 
   const requestHeader = buildCodexRequestHeader(file);
+  const details = await fetchCodexResetCredits(authIndex, requestHeader, t);
+  assertConnection();
+  if (!listSelectableCodexCredits(details.credits, Date.now()).some(({ id }) => id === creditId)) {
+    throw new Error(t('quota_reset.choice_unavailable'));
+  }
 
   const result = await apiCallApi.request({
     authIndex,
@@ -508,6 +517,7 @@ const consumeCodexRateLimitResetCredit = async (
     header: requestHeader,
     data: JSON.stringify({
       redeem_request_id: createCodexRedeemRequestId(),
+      credit_id: creditId,
     }),
   });
 
@@ -521,9 +531,13 @@ const consumeCodexRateLimitResetCredit = async (
   return authIndex;
 };
 
-const resetCodexQuota = async (file: AuthFileItem, t: TFunction): Promise<CodexQuotaData> => {
+const resetCodexQuota = async (
+  file: AuthFileItem,
+  t: TFunction,
+  creditId: string
+): Promise<CodexQuotaData> => {
   const assertConnection = guardConfigConnection();
-  const authIndex = await consumeCodexRateLimitResetCredit(file, t);
+  const authIndex = await consumeCodexRateLimitResetCredit(file, t, creditId, assertConnection);
   try {
     // Never clear a different connection's cooldown after awaiting redemption.
     assertConnection();

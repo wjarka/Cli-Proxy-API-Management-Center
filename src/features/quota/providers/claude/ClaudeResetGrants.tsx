@@ -11,7 +11,8 @@ import {
 import type { AuthFileItem } from '@/types';
 import { normalizeAuthIndex } from '@/utils/quota';
 import { resetGrantOperations, RETRY_WINDOW_MS } from './resetGrantOperations';
-import { selectResetGrant } from './selectResetGrant';
+import { listSelectableResetGrants } from './selectResetGrant';
+import { formatDateTimeValue } from '@/utils/format';
 import { readResetGrantsForCard, scheduleResetGrantRead } from './resetGrantReads';
 
 /** Card-owned reads; the session-scoped journal owns spending and ambiguous retries. */
@@ -74,50 +75,81 @@ export function useClaudeResetGrants(
   const operation = resetGrantOperations.inspect(key);
   const pending = operation && !operation.code ? operation : undefined;
   const expired = Boolean(pending && now - pending.createdAt >= RETRY_WINDOW_MS);
-  const selected = pending?.grantId ?? (status ? selectResetGrant(status, now)?.id : undefined);
-  const blocked = disabled || !sessionActive || !authIndex || busy || expired || !selected;
+  const selectable = status ? listSelectableResetGrants(status, now) : [];
+  const blocked =
+    disabled || !sessionActive || !authIndex || busy || expired || (!pending && !selectable.length);
   const confirm = () => {
-    if (blocked || lock.current || !selected || !authIndex) return;
+    if (blocked || lock.current || !authIndex) return;
     const version = generation.current;
     const current = () =>
       session === apiClient.getConnectionRevision() && version === generation.current;
-    showConfirmation({
+    const dialog = {
       title: t('claude_reset.title'),
       message: t(pending ? 'claude_reset.retry_confirm' : 'claude_reset.confirm_text', {
         name: file.name,
       }),
       confirmText: t(pending ? 'claude_reset.retry' : 'claude_reset.confirm'),
-      variant: 'primary',
-      onConfirm: async () => {
-        if (!current() || lock.current || useAuthStore.getState().connectionStatus !== 'connected')
-          return;
-        lock.current = true;
-        setBusy(true);
-        try {
-          const answer = await resetGrantOperations.run(key, authIndex, selected);
-          if (!current()) return;
-          showNotification(
-            t(`claude_reset.${answer.unresolved ? 'unknown' : answer.code}`),
-            !answer.unresolved && (answer.code === 'reset' || answer.code === 'already_used')
-              ? 'success'
-              : 'error'
-          );
-        } catch {
-          if (!current()) return;
-          const unresolved = resetGrantOperations.inspect(key);
-          showNotification(
-            t(`claude_reset.${unresolved && !unresolved.code ? 'unknown' : 'blocked'}`),
-            'error'
-          );
-        } finally {
-          lock.current = false;
-          // A concurrent page-wide refresh can invalidate this read generation.
-          // Release the local lock regardless, but never refresh a replacement account.
-          setBusy(false);
-          setReload((value) => value + 1);
-          if (current()) onRefresh();
-        }
-      },
+      variant: 'primary' as const,
+    };
+    const submit = async (grantId: string) => {
+      if (!current() || lock.current || useAuthStore.getState().connectionStatus !== 'connected')
+        return;
+      lock.current = true;
+      setBusy(true);
+      try {
+        const answer = await resetGrantOperations.run(key, authIndex, grantId);
+        if (!current()) return;
+        const result = answer.cooldownFailed
+          ? 'cooldown_failed'
+          : answer.unresolved
+            ? 'unknown'
+            : answer.code;
+        showNotification(
+          t(`claude_reset.${result}`),
+          result === 'reset' || result === 'already_used' ? 'success' : 'error'
+        );
+      } catch {
+        if (!current()) return;
+        const unresolved = resetGrantOperations.inspect(key);
+        showNotification(
+          t(`claude_reset.${unresolved && !unresolved.code ? 'unknown' : 'blocked'}`),
+          'error'
+        );
+      } finally {
+        lock.current = false;
+        // A concurrent page-wide refresh can invalidate this read generation.
+        // Release the local lock regardless, but never refresh a replacement account.
+        setBusy(false);
+        setReload((value) => value + 1);
+        if (current()) onRefresh();
+      }
+    };
+    if (pending) {
+      showConfirmation({ ...dialog, onConfirm: () => submit(pending.grantId) });
+      return;
+    }
+
+    const options = selectable.map((grant, index) => {
+      const windows = grant.clears.map((window) => {
+        if (window === 'seven_day_overage_included') return t('quota_reset.fable_weekly');
+        return t(`claude_quota.${window}`);
+      });
+      return {
+        id: grant.id,
+        label: grant.label || t('claude_reset.grant_number', { index: index + 1 }),
+        details: [
+          ...(windows.length ? [windows.join(' · ')] : []),
+          t('claude_reset.count', { left: grant.resetsLeft, total: grant.resetsTotal }),
+          grant.endsAt
+            ? t('claude_reset.ends', { date: formatDateTimeValue(grant.endsAt) })
+            : t('claude_reset.expiry_unknown'),
+        ],
+      };
+    });
+    showConfirmation({
+      ...dialog,
+      choice: { label: t('quota_reset.choose'), options },
+      onConfirm: submit,
     });
   };
   return {

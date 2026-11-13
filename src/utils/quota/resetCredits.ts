@@ -1,14 +1,10 @@
-export interface CodexResetCredit {
-  id: string;
-  status: string;
-  grantedAt: string;
-  expiresAt: string;
-}
+import type { CodexRateLimitResetCredit } from '@/types';
+import { resolveResetMs } from './resetInstants';
 
 export interface CodexResetCreditsSummary {
   availableCount: number | null;
   applicableAvailableCount: number | null;
-  credits: CodexResetCredit[];
+  credits: CodexRateLimitResetCredit[];
   invalidPayload: boolean;
 }
 
@@ -39,7 +35,7 @@ const normalizeNumberValue = (value: unknown): number | null => {
   return null;
 };
 
-const normalizeCredit = (value: unknown): CodexResetCredit | null => {
+const normalizeCredit = (value: unknown): CodexRateLimitResetCredit | null => {
   const record = asRecord(value);
   if (!record) return null;
   if (normalizeStringValue(record.reset_type ?? record.resetType) !== 'codex_rate_limits') {
@@ -49,14 +45,16 @@ const normalizeCredit = (value: unknown): CodexResetCredit | null => {
     return null;
   }
 
-  const expiresAt = normalizeStringValue(record.expires_at ?? record.expiresAt);
-  if (!expiresAt) return null;
+  const id = record.id;
+  if (typeof id !== 'string' || !id.trim() || id.includes('$TOKEN$')) return null;
 
   return {
-    id: normalizeStringValue(record.id) ?? '',
-    status: normalizeStringValue(record.status) ?? '',
+    id,
+    status: 'available',
     grantedAt: normalizeStringValue(record.granted_at ?? record.grantedAt) ?? '',
-    expiresAt,
+    expiresAt: normalizeStringValue(record.expires_at ?? record.expiresAt) ?? '',
+    title: typeof record.title === 'string' ? record.title.trim() : undefined,
+    description: typeof record.description === 'string' ? record.description.trim() : undefined,
   };
 };
 
@@ -103,7 +101,7 @@ export const normalizeCodexResetCreditsPayload = (payload: unknown): CodexResetC
   const credits = Array.isArray(record.credits)
     ? record.credits
         .map((item) => normalizeCredit(item))
-        .filter((item): item is CodexResetCredit => Boolean(item))
+        .filter((item): item is CodexRateLimitResetCredit => item !== null)
     : [];
 
   return {
@@ -115,3 +113,17 @@ export const normalizeCodexResetCreditsPayload = (payload: unknown): CodexResetC
     invalidPayload: !hasExpectedShape,
   };
 };
+
+export function listSelectableCodexCredits(
+  credits: readonly CodexRateLimitResetCredit[],
+  now: number
+) {
+  const seen = new Set<string>();
+  return credits.filter((credit) => {
+    if (!credit.id || credit.status !== 'available' || seen.has(credit.id)) return false;
+    const expiresAt = resolveResetMs([credit.expiresAt]);
+    if (credit.expiresAt && (expiresAt === null || expiresAt <= now)) return false;
+    seen.add(credit.id);
+    return true;
+  });
+}

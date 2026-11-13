@@ -9,15 +9,26 @@ import type { Notification, NotificationType } from '@/types';
 import { generateId } from '@/utils/helpers';
 import { NOTIFICATION_DURATION_MS } from '@/utils/constants';
 
-interface ConfirmationOptions {
+interface ConfirmationBase {
   title?: string;
   message: ReactNode;
   confirmText?: string;
   cancelText?: string;
   variant?: 'danger' | 'primary' | 'secondary';
-  onConfirm: () => void | Promise<void>;
   onCancel?: () => void;
 }
+
+type ConfirmationOptions = ConfirmationBase &
+  (
+    | { choice?: undefined; onConfirm: () => void | Promise<void> }
+    | {
+        choice: {
+          label: string;
+          options: readonly { id: string; label: string; details?: string[] }[];
+        };
+        onConfirm: (id: string) => void | Promise<void>;
+      }
+  );
 
 interface NotificationState {
   notifications: Notification[];

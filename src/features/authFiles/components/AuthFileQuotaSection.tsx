@@ -1,3 +1,6 @@
+import { guardConfigConnection } from '@/services/api/configValue';
+import type { CodexQuotaState } from '@/types';
+import { getCodexResetChoice } from '@/features/quota/providers/codex/resetCreditChoice';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -116,16 +119,29 @@ export function AuthFileQuotaSection(props: AuthFileQuotaSectionProps) {
     const resetQuota = adapter.resetQuota;
     if (!resetQuota) return;
 
+    const choice = getCodexResetChoice(quota as CodexQuotaState | undefined, t);
+    const assertConnection = guardConfigConnection();
+    const cacheGeneration = captureQuotaCacheGeneration(file.name);
+
     showConfirmation({
+      choice,
       title: t('codex_quota.reset_confirm_title'),
-      message: t('codex_quota.reset_confirm_message', { name: file.name }),
+      message: t(
+        choice.options.length ? 'codex_quota.reset_confirm_message' : 'quota_reset.no_choices',
+        { name: file.name }
+      ),
       confirmText: t('codex_quota.reset_confirm_button'),
       variant: 'primary',
-      onConfirm: async () => {
-        const cacheGeneration = captureQuotaCacheGeneration(file.name);
+      onConfirm: async (creditId) => {
+        try {
+          assertConnection();
+        } catch {
+          return;
+        }
+        if (!commitIfQuotaCacheCurrent(cacheGeneration, () => {})) return;
         setResettingQuota(true);
         try {
-          const data = await resetQuota(file, t);
+          const data = await resetQuota(file, t, creditId);
           commitIfQuotaCacheCurrent(cacheGeneration, () => {
             updateQuotaState((prev) => ({
               ...prev,
@@ -148,7 +164,7 @@ export function AuthFileQuotaSection(props: AuthFileQuotaSectionProps) {
     cacheKey,
     disableControls,
     file,
-    quota?.status,
+    quota,
     resettingQuota,
     showConfirmation,
     showNotification,

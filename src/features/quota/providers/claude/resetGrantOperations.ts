@@ -1,6 +1,7 @@
 import { apiClient } from '@/services/api/client';
+import { authFilesApi } from '@/services/api/authFiles';
+import { listSelectableResetGrants } from './selectResetGrant';
 import {
-  anthropicResetGrantBlocker,
   claimClaudeResetGrant,
   readClaudeOrganization,
   readClaudeResetGrants,
@@ -20,6 +21,7 @@ const defaultDependencies = {
   readStatus: (authIndex: string) => readClaudeResetGrants(authIndex, true),
   readOrganization: readClaudeOrganization,
   claim: claimClaudeResetGrant,
+  clearCooldown: (authIndex: string) => authFilesApi.resetCooldown(authIndex),
   now: () => Date.now(),
   requestId: () => crypto.randomUUID() as string,
 };
@@ -67,15 +69,8 @@ export function createResetGrantOperations(deps = defaultDependencies) {
         if (!operation) {
           const status = await deps.readStatus(authIndex);
           assertSession();
-          const grant = status.grants.find((item) => item.id === grantId);
           const now = deps.now();
-          if (
-            anthropicResetGrantBlocker(status, grantId) ||
-            !grant ||
-            (grant.startsAt && Date.parse(grant.startsAt) > now) ||
-            (grant.endsAt && Date.parse(grant.endsAt) <= now) ||
-            (status.cooldownUntil && Date.parse(status.cooldownUntil) > now)
-          ) {
+          if (!listSelectableResetGrants(status, now).some(({ id }) => id === grantId)) {
             throw new Error('blocked');
           }
           operation = { grantId, organization, requestId: deps.requestId(), createdAt: now };
@@ -90,6 +85,18 @@ export function createResetGrantOperations(deps = defaultDependencies) {
         assertSession();
         // A refusal on a retry cannot prove that the earlier ambiguous POST did not spend.
         if (!wasRetry || code === 'reset' || code === 'already_used') operation.code = code;
+        if (code === 'reset' || (wasRetry && code === 'already_used')) {
+          try {
+            const result = await deps.clearCooldown(authIndex);
+            assertSession();
+            if (result.status !== 'ok' || result.auth_index !== authIndex) {
+              return { code, unresolved: false, cooldownFailed: true };
+            }
+          } catch {
+            assertSession();
+            return { code, unresolved: false, cooldownFailed: true };
+          }
+        }
         return { code, unresolved: !operation.code };
       } finally {
         if (deps.revision() === session) busy.delete(key);
